@@ -1,0 +1,24 @@
+poll():
+	- Gestion des connexions entrantes
+		Surveille le fd du socket d'écoute pour détecter les nouvelles connexions
+	- Surveillance des sockets clients
+		Une fois les clients connectés, surveille fd du socket de chaque client pour :
+			Les messages entrants (lecture)
+			L'envoi de messages (écriture)
+	- Gestion des temporisations
+		poll permet également de gérer les temporisations pour certaines opérations, ce
+		qui est crucial pour éviter qu'une connexion lente ne bloque le serveur.
+
+socket():
+	- Domain
+		- AF_INET      IPv4 Internet protocols                    ip(7)
+		- AF_INET6     IPv6 Internet protocols                    ipv6(7)
+	- Type
+		- SOCK_STREAM     Provides sequenced, reliable, two-way, connection-based byte streams.
+			An out-of-band data transmission mechanism may be supported.
+	- Protocoles
+		- La valeur est de 0, que ce soit pour ipv4 ou ipv6.
+
+getsockname():
+	- Sert a obtenir l adresse local d un socket (c a d l ip et le numero de port).
+		Elle est souvent utilise apres q un socket ait ete lie avec bind ou connecte avec connect.
