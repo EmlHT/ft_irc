@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/04 15:31:28 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/05 18:04:52 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,35 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <Client.hpp>
+#include <poll.h>
+#include "ListenSocket.hpp"
+#include "ClientSocket.hpp"
 
 class Server {
-  
+
 	private :
 
-	int _Listen_socket;
-	std::vector<Client> _clients; // Vecteur des clients connectes
-	Server(const Server &src);
-	Server & operator=(const Server &rhs);
+		int _port;
+		ListenSocket _listener;
+		std::vector<ClientSocket*> _clientSocket; // Vecteur des clients connectes
+		std::vector<struct pollfd> _pollVec;
+		Server();
+		Server(const Server &src);
+		Server & operator=(const Server &rhs);
+
+		void	initStructPollfd(int fd, short event);
+		void	initServer();
+		char const	*searchfd(int fd) const;
 
 	public :
-    
-	Server();
-	~Server();
 	
+		Server(int port);
+		~Server();
+
+		class NotListenableOrBindable : public std::exception {
+			public :
+				virtual const char* what() const throw() {
+					return (const char*)(errno);
+				}
+		};
 };
