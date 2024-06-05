@@ -1,30 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ListenSocket.hpp                                   :+:      :+:    :+:   */
+/*   ClientSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/04 15:55:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 16:10:30 by ehouot           ###   ########.fr       */
+/*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
+/*   Updated: 2024/06/05 18:13:06 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "ASocket.hpp"
+#include <iostream>
+#include <string>
 
-class ListenSocket : public ASocket {
+class ClientSocket : public ASocket {
 
 	private :
-
-		ListenSocket(const ListenSocket &src);
-		ListenSocket & operator=(const ListenSocket &rhs);
+		
+		char _buffer[1024];
+		ClientSocket();
+		ClientSocket(const ClientSocket &src);
+		ClientSocket & operator=(const ClientSocket &rhs);
 
 	public :
-		
-		ListenSocket();
-		~ListenSocket();
-		bool	ListenAndBind(int port);
-		int		AcceptConnection();
+
+		ClientSocket(int fd);
+		~ClientSocket();
+		const char	 *getBuffer() const;
+
 };

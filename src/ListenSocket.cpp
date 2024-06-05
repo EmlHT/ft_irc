@@ -6,29 +6,29 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 16:27:26 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/04 18:30:34 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/05 16:10:16 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListenSocket.hpp"
+#include "ClientSocket.hpp"
 
-int		ListenSocket::getFdSocket()
+ListenSocket::ListenSocket()
 {
-	return this->fd_socket;
 }
 
-void	ListenSocket::setFdSocket(int socket)
+ListenSocket::~ListenSocket()
 {
-	this->fd_socket = socket;
 }
 
 // Try to create a socket to listen and bind the local adress with the socket
 bool	ListenSocket::ListenAndBind(int port)
 {
-	setFdSocket(socket(AF_INET, SOCK_STREAM, 0));
-	if (getFdSocket() < 0)
+	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
+	if (getSocketFd() < 0)
 	{
-		std::cerr << errno << std::endl;
+		// std::cerr << errno << std::endl;
+		return false;
 	}
 	struct sockaddr_in adress_local;
 	adress_local.sin_family = AF_INET;
@@ -37,12 +37,12 @@ bool	ListenSocket::ListenAndBind(int port)
 	
 	if (bind(getSocketFd(), (struct sockaddr*) &adress_local, sizeof(adress_local)) < 0)
 	{
-		std::cerr << errno << std::endl;
+		// std::cerr << errno << std::endl;
 		return false;
 	}
-	if (listen(getSocketFd(), 10) < 0) // 10 -> valeur par defaut
+	if (listen(getSocketFd(), SOMAXCONN) < 0) // 10 -> valeur par defaut
 	{
-		std::cerr << errno << std::endl;
+		// std::cerr << errno << std::endl;
 		return false;
 	}
 	return true;
@@ -50,5 +50,10 @@ bool	ListenSocket::ListenAndBind(int port)
 
 int		ListenSocket::AcceptConnection()
 {
-	
+	int client_sockfd = accept(getSocketFd(), NULL, NULL);
+    if (client_sockfd < 0)
+	{
+        std::cerr << errno << std::endl;
+    }
+    return client_sockfd;
 }

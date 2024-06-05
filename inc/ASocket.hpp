@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:33:22 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/04 18:08:14 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/05 13:59:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,18 @@
 class ASocket {
 protected:
 
-    int sockfd;
+    int _sockfd;
+    ASocket();
 
 public:
-    ASocket() : sockfd(-1) {}
+
+    ASocket(int fd) : _sockfd(fd) {};
     virtual ~ASocket() {
-        if (sockfd != -1) {
-            close(sockfd);
+        if (_sockfd != -1) {
+            close(_sockfd);
         }
     }
 
-    int getSocketFd() const { return sockfd; }
+    int getSocketFd() const { return _sockfd; }
+    void setSocketFd(int fd) { this->_sockfd = fd;};
 };
