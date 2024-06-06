@@ -6,13 +6,13 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 18:20:33 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/06 12:51:13 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server(int port) : _port(port)
+Server::Server(unsigned short port) : _port(port)
 {
 }
 
@@ -61,7 +61,6 @@ void    Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						//Gestion de la requete
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
 					}
 				}
