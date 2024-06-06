@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 18:04:52 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/06 12:52:25 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <poll.h>
+#include <limits.h>
 #include "ListenSocket.hpp"
 #include "ClientSocket.hpp"
 
@@ -23,7 +24,7 @@ class Server {
 
 	private :
 
-		int _port;
+		unsigned short _port;
 		ListenSocket _listener;
 		std::vector<ClientSocket*> _clientSocket; // Vecteur des clients connectes
 		std::vector<struct pollfd> _pollVec;
