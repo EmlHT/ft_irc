@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 18:13:06 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/06 12:39:14 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,4 @@ class ClientSocket : public ASocket {
 		ClientSocket(int fd);
 		~ClientSocket();
 		const char	 *getBuffer() const;
-
 };
