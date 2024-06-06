@@ -22,3 +22,5 @@ socket():
 getsockname():
 	- Sert a obtenir l adresse local d un socket (c a d l ip et le numero de port).
 		Elle est souvent utilise apres q un socket ait ete lie avec bind ou connecte avec connect.
+
+La fin d un message client est represente par \r et \n.
