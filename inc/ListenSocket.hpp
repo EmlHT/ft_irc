@@ -6,13 +6,13 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:55:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 16:10:30 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/07 12:23:01 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "ASocket.hpp"
+#include "inc/ASocket.hpp"
 
 class ListenSocket : public ASocket {
 
@@ -24,7 +24,7 @@ class ListenSocket : public ASocket {
 	public :
 		
 		ListenSocket();
-		~ListenSocket();
+		virtual ~ListenSocket();
 		bool	ListenAndBind(int port);
 		int		AcceptConnection();
 };

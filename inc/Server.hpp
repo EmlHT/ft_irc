@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/06 12:52:25 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/07 12:09:24 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,15 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <poll.h>
 #include <limits.h>
+#include "ASocket.hpp"
 #include "ListenSocket.hpp"
 #include "ClientSocket.hpp"
+#include <errno.h>
+
 
 class Server {
 
@@ -38,13 +42,13 @@ class Server {
 
 	public :
 	
-		Server(int port);
+		Server(unsigned short port);
 		~Server();
 
 		class NotListenableOrBindable : public std::exception {
 			public :
 				virtual const char* what() const throw() {
-					return (const char*)(errno);
+					return strerror(errno);
 				}
 		};
 };

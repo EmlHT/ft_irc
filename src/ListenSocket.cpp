@@ -6,14 +6,15 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 16:27:26 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 16:10:16 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/07 12:19:38 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ListenSocket.hpp"
-#include "ClientSocket.hpp"
+#include "inc/ASocket.hpp"
+#include "inc/ListenSocket.hpp"
+#include "inc/ClientSocket.hpp"
 
-ListenSocket::ListenSocket()
+ListenSocket::ListenSocket() : ASocket()
 {
 }
 
@@ -24,27 +25,24 @@ ListenSocket::~ListenSocket()
 // Try to create a socket to listen and bind the local adress with the socket
 bool	ListenSocket::ListenAndBind(int port)
 {
-	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
-	if (getSocketFd() < 0)
-	{
-		// std::cerr << errno << std::endl;
-		return false;
-	}
 	struct sockaddr_in adress_local;
 	adress_local.sin_family = AF_INET;
 	adress_local.sin_port = htons(port);
 	adress_local.sin_addr.s_addr = INADDR_ANY;
-	
+
+	setSocketFd(socket(AF_INET, SOCK_STREAM, 0));
+	if (getSocketFd() < 0)
+		return false;
+
+	int en = 1;
+	if(setsockopt(getSocketFd(), SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) < 0)
+		return false;
+	if (fcntl(getSocketFd(), F_SETFL, O_NONBLOCK) < 0)
+		return false;
 	if (bind(getSocketFd(), (struct sockaddr*) &adress_local, sizeof(adress_local)) < 0)
-	{
-		// std::cerr << errno << std::endl;
 		return false;
-	}
-	if (listen(getSocketFd(), SOMAXCONN) < 0) // 10 -> valeur par defaut
-	{
-		// std::cerr << errno << std::endl;
+	if (listen(getSocketFd(), SOMAXCONN) < 0)
 		return false;
-	}
 	return true;
 }
 

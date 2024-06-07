@@ -6,11 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/06 12:51:13 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/07 12:21:30 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "inc/Server.hpp"
 
 Server::Server(unsigned short port) : _port(port)
 {
@@ -30,9 +30,9 @@ void    Server::initServer()
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
     	if (nbPollRevent < 0) {
         	std::cerr << errno << std::endl;
-        break;
+        	break;
     	}
-		for (int i = 0; i < _clientSocket.size(); i++)
+		for (size_t i = 0; i < _clientSocket.size(); i++)
 		{
 			if (_pollVec[i].revents & POLLIN)
 			{

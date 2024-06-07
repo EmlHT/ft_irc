@@ -6,11 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:36:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/05 18:12:59 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/07 12:12:58 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientSocket.hpp"
+#include "inc/ClientSocket.hpp"
 
 ClientSocket::ClientSocket(int fd) : ASocket(fd)
 {

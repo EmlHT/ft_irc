@@ -1,5 +1,9 @@
-SRC_MAIN 	= 	./main.cpp \
-				./
+SRC_MAIN 	= 	main.cpp \
+				src/ClientSocket.cpp \
+				src/ListenSocket.cpp \
+				src/Server.cpp \
+
+				
 
 SRC			= ${SRC_MAIN}
 
