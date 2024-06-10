@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/07 12:21:30 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/10 18:26:16 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void    Server::initServer()
 {
 	if (!_listener.ListenAndBind(this->_port))
 		throw NotListenableOrBindable();
-	initStructPollfd(_listener.getSocketFd(), POLLIN);
+	addInStructPollfd(_listener.getSocketFd(), POLLIN);
 	while (true)
 	{
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
@@ -41,8 +41,13 @@ void    Server::initServer()
 					int client_socket = _listener.AcceptConnection();
 					if (client_socket < 0)
 						continue ;
+					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) < 0)
+					{
+						std::cerr << errno << std::endl;
+						continue ;
+					}
 					_clientSocket.push_back(new ClientSocket(client_socket));
-					initStructPollfd(client_socket, POLLIN);
+					addInStructPollfd(client_socket, POLLIN);
 					std::cout << "Connection Done !" << std::endl;
 				}
 				else
@@ -61,7 +66,10 @@ void    Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
+						//send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
+						// Pas certain de send ici (A voir) 
+						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
+						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
 					}
 				}
 			}
@@ -69,12 +77,12 @@ void    Server::initServer()
 	}
 }
 
-void	Server::initStructPollfd(int fd, short event)
+void	Server::addInStructPollfd(int fd, short event)
 {
-    pollfd listen_fd;
-    listen_fd.fd = fd;
-    listen_fd.events = event;
-    _pollVec.push_back(listen_fd);
+    pollfd NewPoll;
+    NewPoll.fd = fd;
+    NewPoll.events = event;
+    _pollVec.push_back(NewPoll);
 }
 
 char const	*Server::searchfd(int fd) const

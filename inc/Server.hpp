@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/07 12:09:24 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/10 18:05:55 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Server {
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
 
-		void	initStructPollfd(int fd, short event);
+		void	addInStructPollfd(int fd, short event);
 		void	initServer();
 		char const	*searchfd(int fd) const;
 
