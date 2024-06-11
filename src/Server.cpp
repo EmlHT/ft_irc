@@ -20,7 +20,7 @@ Server::~Server()
 {
 }
 
-void    Server::initServer()
+void	Server::initServer()
 {
 	if (!_listener.ListenAndBind(this->_port))
 		throw NotListenableOrBindable();
@@ -28,10 +28,10 @@ void    Server::initServer()
 	while (true)
 	{
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
-    	if (nbPollRevent < 0) {
-        	std::cerr << errno << std::endl;
-        	break;
-    	}
+		if (nbPollRevent < 0) {
+			std::cerr << errno << std::endl;
+			break;
+		}
 		for (size_t i = 0; i < _clientSocket.size(); i++)
 		{
 			if (_pollVec[i].revents & POLLIN)
@@ -67,7 +67,7 @@ void    Server::initServer()
 					{
 						bufferContent[bytes_received] = '\0';
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
-						
+
 						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
 						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
 					}
@@ -79,10 +79,10 @@ void    Server::initServer()
 
 void	Server::addInStructPollfd(int fd, short event)
 {
-    pollfd NewPoll;
-    NewPoll.fd = fd;
-    NewPoll.events = event;
-    _pollVec.push_back(NewPoll);
+	pollfd NewPoll;
+	NewPoll.fd = fd;
+	NewPoll.events = event;
+	_pollVec.push_back(NewPoll);
 }
 
 char const	*Server::searchfd(int fd) const
@@ -99,61 +99,116 @@ char const	*Server::searchfd(int fd) const
 
 std::string getFirstWord(const std::string& str)
 {
-    std::istringstream iss(str);
-    std::string firstWord;
-    iss >> firstWord;
-    return firstWord;
+	std::istringstream iss(str);
+	std::string firstWord;
+	iss >> firstWord;
+	return firstWord;
 }
 
 void	Server::parseBuffer(char *buffer)
 {
 	std::string str(buffer);
-	
-	int i;
+
+	size_t i;
 	std::string firstWord = getFirstWord(str);
-	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT", "NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
+	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT",
+		"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
+	void (Server::*function_table[11])(std::string buffer) = {&Server::cmdKick,
+		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
+		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
+		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
 	for (i = 0; i < tokensList->size(); i++)
 	{
 		if (tokensList[i] == firstWord)
+		{
+			std::string bufferRest = str.substr(firstWord.size() + 1);
+			(this->*function_table[i])(bufferRest);
 			break ;
+		}
 	}
-	std::string bufferRest = str.substr(firstWord.size() + 1);
-	switch (i)
-	{
-		case 0 :
-			cmdKick(bufferRest);
-			break;
-		case 1 :
-			cmdInvite(bufferRest);
-			break;
-		case 2 :
-			cmdTopic(bufferRest);
-			break;
-		case 3 :
-			cmdMode(bufferRest);
-			break;
-		case 4 :
-			cmdQuit(bufferRest);
-			break;
-		case 5 :
-			cmdNick(bufferRest);
-			break;
-		case 6 :
-			cmdUser(bufferRest);
-			break;
-		case 7 :
-			cmdPass(bufferRest);
-			break;
-		case 8 :
-			cmdPrivsmg(bufferRest);
-			break;
-		case 9 :
-			cmdJoin(bufferRest);
-			break;
-		case 10 :
-			cmdPart(bufferRest);
-			break;
-		default :
-			throw BufferProblem();
-	}
+	if (i == 11)
+		throw BufferProblem();
+//	std::string bufferRest = str.substr(firstWord.size() + 1);
+//	switch (i)
+//	{
+//		case 0 :
+//			cmdKick(bufferRest);
+//			break;
+//		case 1 :
+//			cmdInvite(bufferRest);
+//			break;
+//		case 2 :
+//			cmdTopic(bufferRest);
+//			break;
+//		case 3 :
+//			cmdMode(bufferRest);
+//			break;
+//		case 4 :
+//			cmdQuit(bufferRest);
+//			break;
+//		case 5 :
+//			cmdNick(bufferRest);
+//			break;
+//		case 6 :
+//			cmdUser(bufferRest);
+//			break;
+//		case 7 :
+//			cmdPass(bufferRest);
+//			break;
+//		case 8 :
+//			cmdPrivsmg(bufferRest);
+//			break;
+//		case 9 :
+//			cmdJoin(bufferRest);
+//			break;
+//		case 10 :
+//			cmdPart(bufferRest);
+//			break;
+//		default :
+//			throw BufferProblem();
+//	}
+}
+
+void	Server::cmdKick(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdInvite(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdTopic(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdMode(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdQuit(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdNick(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdUser(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdPass(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdPrivsmg(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdJoin(std::string buffer) {
+	static_cast<void>(buffer);
+}
+
+void	Server::cmdPart(std::string buffer) {
+	static_cast<void>(buffer);
 }
