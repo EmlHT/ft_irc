@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/10 18:26:16 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/11 11:39:55 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ void    Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						//send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
-						// Pas certain de send ici (A voir) 
+						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
+						
 						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
 						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
 					}
@@ -95,4 +95,65 @@ char const	*Server::searchfd(int fd) const
 			return (*it)->getBuffer();
 	}
 	return NULL;
+}
+
+std::string getFirstWord(const std::string& str)
+{
+    std::istringstream iss(str);
+    std::string firstWord;
+    iss >> firstWord;
+    return firstWord;
+}
+
+void	Server::parseBuffer(char *buffer)
+{
+	std::string str(buffer);
+	
+	int i;
+	std::string firstWord = getFirstWord(str);
+	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT", "NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
+	for (i = 0; i < tokensList->size(); i++)
+	{
+		if (tokensList[i] == firstWord)
+			break ;
+	}
+	std::string bufferRest = str.substr(firstWord.size() + 1);
+	switch (i)
+	{
+		case 0 :
+			cmdKick(bufferRest);
+			break;
+		case 1 :
+			cmdInvite(bufferRest);
+			break;
+		case 2 :
+			cmdTopic(bufferRest);
+			break;
+		case 3 :
+			cmdMode(bufferRest);
+			break;
+		case 4 :
+			cmdQuit(bufferRest);
+			break;
+		case 5 :
+			cmdNick(bufferRest);
+			break;
+		case 6 :
+			cmdUser(bufferRest);
+			break;
+		case 7 :
+			cmdPass(bufferRest);
+			break;
+		case 8 :
+			cmdPrivsmg(bufferRest);
+			break;
+		case 9 :
+			cmdJoin(bufferRest);
+			break;
+		case 10 :
+			cmdPart(bufferRest);
+			break;
+		default :
+			throw BufferProblem();
+	}
 }
