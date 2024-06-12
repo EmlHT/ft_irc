@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:38:55 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/12 17:53:46 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,8 @@ void	Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						parseBuffer(bufferContent, _pollVec[i].fd);
+						parseBuffer(bufferContent, _pollVec[i].fd, i);
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
-
-						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
-						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
 					}
 				}
 			}
@@ -103,11 +100,24 @@ std::string getFirstWord(const std::string& str)
 {
 	std::istringstream iss(str);
 	std::string firstWord;
-	iss >> firstWord;
+	if (!(iss >> firstWord)) {
+		return "";
+	}
 	return firstWord;
 }
 
-void	Server::parseBuffer(char *buffer, int pollVecFd)
+std::string getSecondWord(const std::string& str)
+{
+	std::istringstream iss(str);
+	std::string firstWord, secondWord;
+	iss >> firstWord;
+	if (!(iss >> secondWord)) {
+		return "";
+	}
+	return secondWord;
+}
+
+void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 {
 	std::string str(buffer);
 
@@ -115,7 +125,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 	std::string firstWord = getFirstWord(str);
 	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT",
 		"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
-	void (Server::*function_table[11])(std::string buffer, int pollVecFd) = {&Server::cmdKick,
+	void (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
 		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
@@ -124,7 +134,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 		if (tokensList[i] == firstWord)
 		{
 			std::string bufferRest = str.substr(firstWord.size() + 1);
-			(this->*function_table[i])(bufferRest, pollVecFd);
+			(this->*function_table[i])(bufferRest, pollVecFd, index);
 			break ;
 		}
 	}
@@ -132,65 +142,92 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 		throw BufferProblem();
 }
 
-void	needMoreParams(std::string buffer, int pollVecFd, ClientSocket user)
+int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 {
-	if (buffer == "\0")
-		std::cout << SERV_NAME << " 461 " << user.getNick()/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
-	
+	if (buffer == "") {
+		std::cout << SERV_NAME << " 461 " << client->getNick() << " PRIVMSG :Not enough parameters" << std::endl;
+		return 461;
+	}
+	return 0;
 }
 
-void	Server::cmdKick(std::string buffer, int pollVecFd) {
+void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdInvite(std::string buffer, int pollVecFd) {
+void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdTopic(std::string buffer, int pollVecFd) {
+void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdMode(std::string buffer, int pollVecFd) {
+void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdQuit(std::string buffer, int pollVecFd) {
+void	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdNick(std::string buffer, int pollVecFd) {
+void	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdUser(std::string buffer, int pollVecFd) {
+void	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdPass(std::string buffer, int pollVecFd) {
+void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
-	static_cast<void>(pollVecFd);
-	 
-	
+void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
+{ 
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
+		return;
+	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
+
+	if (text == "") // Check si pas de text
+		std::cout << SERV_NAME << " 412 " << _clientSocket.at(index)->getNick() << " PRIVMSG :No text to send" << std::endl;
+
+	std::vector<std::string> targets;
+	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
+	size_t pos = 0, coma;
+	while (pos != std::string::npos)
+	{
+		if (coma = buffer.find("'", pos) != std::string::npos)
+			targets.push_back(buffer.substr(pos, coma - 1));
+		pos = coma + 1;
+	}
+	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
+		text = text.substr(1);
+	for (it; it != ite; it++)
+	{
+		if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
+			send(targetFd, text.c_str(), text.size(), 0);
+		else if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
+			send(channelFd, text.c_str(), text.size(), 0);
+		else
+			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick/channel" << std::endl;
+	}
 }
 
-void	Server::cmdJoin(std::string buffer, int pollVecFd) {
+void	Server::cmdJoin(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdPart(std::string buffer, int pollVecFd) {
+void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
