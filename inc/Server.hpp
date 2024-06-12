@@ -59,7 +59,7 @@ class Server {
 
 		template < typename T >
 		int findFdTarget(std::vector<T>& TSockets, const std::string& targetNick) {
-			for (std::vector<T>::const_iterator it = TSockets.begin(); it != TSockets.end(); ++it)
+			for (typename std::vector<T>::const_iterator it = TSockets.begin(); it != TSockets.end(); ++it)
 			{
 				if (it->getNick() == targetNick || it->getName() == targetNick)
 					return it->getSocketFd();
@@ -68,7 +68,7 @@ class Server {
 		}
 
 	public :
-	
+
 		Server(unsigned short port);
 		~Server();
 

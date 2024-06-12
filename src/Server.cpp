@@ -217,7 +217,7 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target
 	size_t pos = 0, coma;
 	while (pos != std::string::npos)
 	{
-		if (coma = buffer.find("'", pos) != std::string::npos)
+		if ((coma = buffer.find("'", pos)) != std::string::npos)
 			targets.push_back(buffer.substr(pos, coma - 1));
 		pos = coma + 1;
 	}
