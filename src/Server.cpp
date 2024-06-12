@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:25:48 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/12 12:28:58 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void	Server::initServer()
 	addInStructPollfd(_listener.getSocketFd(), POLLIN);
 	while (true)
 	{
+		std::cout << "TEST : hello" << std::endl;
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
 		if (nbPollRevent < 0) {
 			std::cerr << errno << std::endl;
@@ -140,45 +141,56 @@ void	needMoreParams(std::string buffer, int pollVecFd, ClientSocket user)
 
 void	Server::cmdKick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdInvite(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdMode(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdQuit(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdNick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdUser(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPass(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
-	
+	static_cast<void>(pollVecFd);
+	 
 	
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
