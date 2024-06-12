@@ -114,7 +114,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 	std::string firstWord = getFirstWord(str);
 	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT",
 		"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
-	void (Server::*function_table[11])(std::string buffer) = {&Server::cmdKick,
+	void (Server::*function_table[11])(std::string buffer, int pollVecFd) = {&Server::cmdKick,
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
 		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
@@ -123,7 +123,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 		if (tokensList[i] == firstWord)
 		{
 			std::string bufferRest = str.substr(firstWord.size() + 1);
-			(this->*function_table[i])(bufferRest);
+			(this->*function_table[i])(bufferRest, pollVecFd);
 			break ;
 		}
 	}
