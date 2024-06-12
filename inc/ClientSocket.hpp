@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:19:34 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/12 12:40:57 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,11 @@ class ClientSocket : public ASocket {
 
 		ClientSocket(int fd);
 		virtual ~ClientSocket();
-		const char	 *getBuffer() const;
+		const char	 		*getBuffer() const;
+		const std::string	getNick() const;
+		const std::string	getName() const;
+		const std::string	getPass() const;
+		void 				setNick(std::string nick);
+		void 				setName(std::string name);
+		void 				setPass(std::string password);
 };

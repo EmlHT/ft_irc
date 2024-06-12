@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:28:58 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/12 12:38:55 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 void	needMoreParams(std::string buffer, int pollVecFd, ClientSocket user)
 {
 	if (buffer == "\0")
-		std::cout << SERV_NAME << " 461 " << /*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
+		std::cout << SERV_NAME << " 461 " << user.getNick()/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
 	
 }
 
