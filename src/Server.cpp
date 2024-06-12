@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/11 16:09:47 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/12 12:38:55 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,13 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 		throw BufferProblem();
 }
 
+void	needMoreParams(std::string buffer, int pollVecFd, ClientSocket user)
+{
+	if (buffer == "\0")
+		std::cout << SERV_NAME << " 461 " << user.getNick()/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
+	
+}
+
 void	Server::cmdKick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
@@ -176,8 +183,7 @@ void	Server::cmdPass(std::string buffer, int pollVecFd) {
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
 	static_cast<void>(pollVecFd);
-	if (buffer == "\0")
-		std::cout << SERV_NAME << " 461 " << "/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/" << "PRIVMSG :Not enough parameters" << std::endl; 
+	 
 	
 }
 
