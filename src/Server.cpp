@@ -27,6 +27,7 @@ void	Server::initServer()
 	addInStructPollfd(_listener.getSocketFd(), POLLIN);
 	while (true)
 	{
+		std::cout << "TEST : hello" << std::endl;
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
 		if (nbPollRevent < 0) {
 			std::cerr << errno << std::endl;
@@ -133,46 +134,57 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 
 void	Server::cmdKick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdInvite(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdMode(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdQuit(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdNick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdUser(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPass(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
+	static_cast<void>(pollVecFd);
 	if (buffer == "\0")
-		std::cout << SERV_NAME << " 461 " << /*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
+		std::cout << SERV_NAME << " 461 " << "/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/" << "PRIVMSG :Not enough parameters" << std::endl; 
 	
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
+	static_cast<void>(pollVecFd);
 }

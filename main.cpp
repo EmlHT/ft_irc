@@ -39,7 +39,10 @@ int main(int argc, char **argv)
     }
     try {
         Server server(port);
+		server.initServer();
+		std::cout << "TEST : good" << std::endl;
     } catch (std::exception &e) {
+		std::cout << "TEST : error" << std::endl;
         std::cerr << errno << std::endl;
     }
 }

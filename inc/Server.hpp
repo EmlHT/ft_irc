@@ -39,7 +39,6 @@ class Server {
 		Server & operator=(const Server &rhs);
 
 		void	addInStructPollfd(int fd, short event);
-		void	initServer();
 		char const	*searchfd(int fd) const;
 		void	parseBuffer(char *buffer, int pollVecFd);
 
@@ -59,6 +58,8 @@ class Server {
 	
 		Server(unsigned short port);
 		~Server();
+
+		void	initServer();
 
 		class NotListenableOrBindable : public std::exception {
 			public :
