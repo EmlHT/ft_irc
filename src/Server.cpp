@@ -129,45 +129,6 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 	}
 	if (i == 11)
 		throw BufferProblem();
-//	std::string bufferRest = str.substr(firstWord.size() + 1);
-//	switch (i)
-//	{
-//		case 0 :
-//			cmdKick(bufferRest);
-//			break;
-//		case 1 :
-//			cmdInvite(bufferRest);
-//			break;
-//		case 2 :
-//			cmdTopic(bufferRest);
-//			break;
-//		case 3 :
-//			cmdMode(bufferRest);
-//			break;
-//		case 4 :
-//			cmdQuit(bufferRest);
-//			break;
-//		case 5 :
-//			cmdNick(bufferRest);
-//			break;
-//		case 6 :
-//			cmdUser(bufferRest);
-//			break;
-//		case 7 :
-//			cmdPass(bufferRest);
-//			break;
-//		case 8 :
-//			cmdPrivsmg(bufferRest);
-//			break;
-//		case 9 :
-//			cmdJoin(bufferRest);
-//			break;
-//		case 10 :
-//			cmdPart(bufferRest);
-//			break;
-//		default :
-//			throw BufferProblem();
-//	}
 }
 
 void	Server::cmdKick(std::string buffer, int pollVecFd) {
