@@ -36,7 +36,7 @@ void	Server::initServer()
 		{
 			if (_pollVec[i].revents & POLLIN)
 			{
-				if (_pollVec[i].fd == _listener.getSocketFd())
+				if (_pollVec[i].fd == _listener.getSocketFd()) //acceptNewClient
 				{
 					int client_socket = _listener.AcceptConnection();
 					if (client_socket < 0)
@@ -50,7 +50,7 @@ void	Server::initServer()
 					addInStructPollfd(client_socket, POLLIN);
 					std::cout << "Connection Done !" << std::endl;
 				}
-				else
+				else //clientTreats
 				{
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd);
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, sizeof(bufferContent) - 1, 0);
