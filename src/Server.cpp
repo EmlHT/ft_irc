@@ -30,11 +30,13 @@ void	Server::initServer()
 		std::cout << "TEST : hello" << std::endl;
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
 		if (nbPollRevent < 0) {
+			std::cout << "TEST : dans if" << std::endl;
 			std::cerr << errno << std::endl;
 			break;
 		}
 		for (size_t i = 0; i < _clientSocket.size(); i++)
 		{
+			std::cout << "TEST : hi" << std::endl;
 			if (_pollVec[i].revents & POLLIN)
 			{
 				if (_pollVec[i].fd == _listener.getSocketFd()) //acceptNewClient
