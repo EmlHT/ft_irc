@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/11 11:39:55 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/11 16:09:47 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ void	Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0);
+						parseBuffer(bufferContent, _pollVec[i].fd);
+						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
 
 						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
 						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
@@ -105,7 +106,7 @@ std::string getFirstWord(const std::string& str)
 	return firstWord;
 }
 
-void	Server::parseBuffer(char *buffer)
+void	Server::parseBuffer(char *buffer, int pollVecFd)
 {
 	std::string str(buffer);
 
@@ -169,46 +170,48 @@ void	Server::parseBuffer(char *buffer)
 //	}
 }
 
-void	Server::cmdKick(std::string buffer) {
+void	Server::cmdKick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdInvite(std::string buffer) {
+void	Server::cmdInvite(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdTopic(std::string buffer) {
+void	Server::cmdTopic(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdMode(std::string buffer) {
+void	Server::cmdMode(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdQuit(std::string buffer) {
+void	Server::cmdQuit(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdNick(std::string buffer) {
+void	Server::cmdNick(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdUser(std::string buffer) {
+void	Server::cmdUser(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdPass(std::string buffer) {
+void	Server::cmdPass(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdPrivsmg(std::string buffer) {
+void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
+	if (buffer == "\0")
+		std::cout << SERV_NAME << " 461 " << /*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
+	
+}
+
+void	Server::cmdJoin(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
 
-void	Server::cmdJoin(std::string buffer) {
-	static_cast<void>(buffer);
-}
-
-void	Server::cmdPart(std::string buffer) {
+void	Server::cmdPart(std::string buffer, int pollVecFd) {
 	static_cast<void>(buffer);
 }
