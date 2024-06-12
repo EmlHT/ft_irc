@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "inc/Server.hpp"
+#include <stdlib.h>
 
 Server::Server(unsigned short port) : _port(port)
 {
@@ -27,20 +28,25 @@ void	Server::initServer()
 	addInStructPollfd(_listener.getSocketFd(), POLLIN);
 	while (true)
 	{
-		std::cout << "TEST : hello" << std::endl;
+//		std::cout << "TEST1 : " << _pollVec.size()<< std::endl;
+//		std::cout << "TEST1 : " << _clientSocket.size() << std::endl;
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
 		if (nbPollRevent < 0) {
-			std::cout << "TEST : dans if" << std::endl;
+//			std::cout << "TEST : dans if" << std::endl;
 			std::cerr << errno << std::endl;
 			break;
 		}
-		for (size_t i = 0; i < _clientSocket.size(); i++)
+//		std::cout << "TEST2 : " << _pollVec.size() << std::endl;
+//		std::cout << "TEST2 : " << _clientSocket.size() << std::endl;
+		for (size_t i = 0; i < _pollVec.size(); i++)
 		{
-			std::cout << "TEST : hi" << std::endl;
+//			std::cout << "TEST : hi" << std::endl;
 			if (_pollVec[i].revents & POLLIN)
 			{
 				if (_pollVec[i].fd == _listener.getSocketFd()) //acceptNewClient
 				{
+//					std::cout << "TEST : OOO" << std::endl;
+//					exit(1);
 					int client_socket = _listener.AcceptConnection();
 					if (client_socket < 0)
 						continue ;
@@ -55,8 +61,11 @@ void	Server::initServer()
 				}
 				else //clientTreats
 				{
+//					std::cout << "TEST : HHH" << std::endl;
+//					exit(1);
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd);
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, sizeof(bufferContent) - 1, 0);
+//					std::cout << "recv " << bufferContent << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
@@ -71,6 +80,7 @@ void	Server::initServer()
 						bufferContent[bytes_received] = '\0';
 						parseBuffer(bufferContent, _pollVec[i].fd);
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
+//						std::cout << "Send " << bufferContent << std::endl;
 
 						// Plutot checker le bufferContent et voir ce qu'il y a dedans et le client send plutot que le server.
 						// Il faut du coup parser le content, ensuite voir si cela correspond a une commande (on TOKENIZE ???) et cela effectue ou non la commande en question.
@@ -136,6 +146,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd)
 
 void	needMoreParams(std::string buffer, int pollVecFd, ClientSocket user)
 {
+	static_cast<void>(pollVecFd);
 	if (buffer == "\0")
 		std::cout << SERV_NAME << " 461 " << user.getNick()/*NICK du USER ici qui doit etre add aux var du user dans de la commande NICK*/ << "PRIVMSG :Not enough parameters" << std::endl; 
 	
@@ -182,9 +193,8 @@ void	Server::cmdPass(std::string buffer, int pollVecFd) {
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd) {
+	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
-	 
-	
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd) {
