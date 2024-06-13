@@ -13,12 +13,38 @@
 #include "inc/Server.hpp"
 #include <stdlib.h>
 
+#include <stdio.h>
+
 Server::Server(unsigned short port) : _port(port)
 {
 }
 
 Server::~Server()
 {
+}
+
+void	Server::checkPort(char *port) const
+{
+	if (strlen(port) > 5)
+		throw PortProblem();
+
+	int	i = 0;
+
+	while (port[i])
+	{
+		if (port[i] < '0' || port[i] > '9')
+			throw PortProblem();
+		i++;
+	}
+
+	if (atoi(port) != _port)
+		throw PortProblem();
+
+	if (_port > USHRT_MAX)
+		throw PortProblem();
+
+	if (port[0] == '0' && port[1] == '\0')
+		throw PortProblem();
 }
 
 void	Server::initServer()
@@ -64,8 +90,15 @@ void	Server::initServer()
 //					std::cout << "TEST : HHH" << std::endl;
 //					exit(1);
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd);
-					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, /*Server::_buffer_recv_limit - 1*/sizeof(bufferContent) - 1, 0);
-					std::cout << "recv " << bufferContent << std::endl;
+					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
+//					std::cout << "recv " << bufferContent << std::endl;
+//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//					while (*bufferContent)
+//					{
+//						printf(">%c< %d\n", *bufferContent, *bufferContent);
+//						bufferContent++;
+//					}
+//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
@@ -80,7 +113,7 @@ void	Server::initServer()
 						bufferContent[bytes_received] = '\0';
 						parseBuffer(bufferContent, _pollVec[i].fd, i);
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
-						std::cout << "Send " << bufferContent << std::endl;
+//						std::cout << "Send " << bufferContent << std::endl;
 					}
 				}
 			}

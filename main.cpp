@@ -18,31 +18,25 @@
 
 unsigned short charToUShort(const char *str)
 {
-    unsigned short result = 0;
-    std::istringstream iss(str);
-    iss >> result;
-    return result;
+	unsigned short result = 0;
+	std::istringstream iss(str);
+	iss >> result;
+	return result;
 }
 
 int main(int argc, char **argv)
 {
 	if (argc != 3)
-    {
-        std::cerr << "There must be two parameters." << std::endl;
-        return 1;
-    }
-    unsigned short port = charToUShort(argv[1]);
-    if (port > USHRT_MAX && strlen(argv[1]) > 5)
-    {
-        std::cerr << "Wrong port." << std::endl;
-        return 1;
-    }
-    try {
-        Server server(port);
+	{
+		std::cerr << "There must be two parameters." << std::endl;
+		return 1;
+	}
+	
+	try {
+		Server server(charToUShort(argv[1]));
+		server.checkPort(argv[1]);
 		server.initServer();
-		std::cout << "TEST : good" << std::endl;
-    } catch (std::exception &e) {
-		std::cout << "TEST : error" << std::endl;
-        std::cerr << errno << std::endl;
-    }
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 }
