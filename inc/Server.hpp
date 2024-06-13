@@ -38,6 +38,7 @@ class Server {
 		Server();
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
+		static int	_buffer_recv_limit;
 
 		void	addInStructPollfd(int fd, short event);
 		char const	*searchfd(int fd) const;

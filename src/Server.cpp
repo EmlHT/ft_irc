@@ -64,8 +64,8 @@ void	Server::initServer()
 //					std::cout << "TEST : HHH" << std::endl;
 //					exit(1);
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd);
-					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, sizeof(bufferContent) - 1, 0);
-//					std::cout << "recv " << bufferContent << std::endl;
+					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, /*Server::_buffer_recv_limit - 1*/sizeof(bufferContent) - 1, 0);
+					std::cout << "recv " << bufferContent << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
@@ -80,7 +80,7 @@ void	Server::initServer()
 						bufferContent[bytes_received] = '\0';
 						parseBuffer(bufferContent, _pollVec[i].fd, i);
 						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
-//						std::cout << "Send " << bufferContent << std::endl;
+						std::cout << "Send " << bufferContent << std::endl;
 					}
 				}
 			}
@@ -141,17 +141,17 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
 		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
-	for (i = 0; i < tokensList->size(); i++)
+	for (i = 0; i < sizeof(tokensList) / sizeof(tokensList[0]); i++)
 	{
-		if (tokensList[i] == firstWord)
+		if (tokensList[i].compare(firstWord) == 0)
 		{
 			std::string bufferRest = str.substr(firstWord.size() + 1);
 			(this->*function_table[i])(bufferRest, pollVecFd, index);
 			break ;
 		}
 	}
-	if (i == 11)
-		throw BufferProblem();
+//	if (i == 11)
+//		throw BufferProblem();
 }
 
 int	Server::needMoreParams(std::string buffer, ClientSocket* client)
@@ -204,7 +204,7 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
-{ 
+{
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
 		return;
 	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
@@ -243,3 +243,5 @@ void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
 }
+
+int	Server::_buffer_recv_limit = 512;
