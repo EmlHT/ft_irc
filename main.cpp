@@ -31,10 +31,11 @@ int main(int argc, char **argv)
 		std::cerr << "There must be two parameters." << std::endl;
 		return 1;
 	}
-	
+
 	try {
-		Server server(charToUShort(argv[1]));
+		Server server(charToUShort(argv[1]), argv[2]);
 		server.checkPort(argv[1]);
+		server.checkPassword(argv[2]);
 		server.initServer();
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;

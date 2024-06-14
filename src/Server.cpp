@@ -15,7 +15,8 @@
 
 #include <stdio.h>
 
-Server::Server(unsigned short port) : _port(port)
+Server::Server(unsigned short port, std::string password) : _port(port),
+	_password(password)
 {
 }
 
@@ -45,6 +46,21 @@ void	Server::checkPort(char *port) const
 
 	if (port[0] == '0' && port[1] == '\0')
 		throw PortProblem();
+}
+
+void	Server::checkPassword(char *password) const
+{
+	int	i = 0;
+
+	while (password[i])
+	{
+		if (password[i] < ' ' || password[i] > '~')
+			throw PasswordProblem();
+		i++;
+	}
+
+	if (this->_password.size() > 128)
+		throw PasswordProblem();
 }
 
 void	Server::initServer()

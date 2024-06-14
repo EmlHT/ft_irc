@@ -30,15 +30,16 @@ class Server {
 
 	private :
 
-		unsigned short _port;
-		ListenSocket _listener;
-		std::vector<ClientSocket*> _clientSocket; // Vecteur des clients connectes
+		unsigned short				_port;
+		std::string					_password;
+		ListenSocket				_listener;
+		std::vector<ClientSocket*>	_clientSocket; // Vecteur des clients connectes
+		static int					_buffer_recv_limit;
 		//std::vector<Channels*> _channelSocket; // Vecteur des channels connectes
-		std::vector<struct pollfd> _pollVec;
+		std::vector<struct pollfd>	_pollVec;
 		Server();
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
-		static int	_buffer_recv_limit;
 
 		void	addInStructPollfd(int fd, short event);
 		char const	*searchfd(int fd) const;
@@ -70,16 +71,24 @@ class Server {
 
 	public :
 
-		Server(unsigned short port);
+		Server(unsigned short port, std::string password);
 		~Server();
 
 		void	initServer();
 		void	checkPort(char *port) const;
+		void	checkPassword(char *password)const;
 
 		class PortProblem : public std::exception {
 			public :
 				virtual const char* what() const throw() {
 					return "Wrong port.";
+				}
+		};
+
+		class PasswordProblem : public std::exception {
+			public :
+				virtual const char* what() const throw() {
+					return "Wrong password.";
 				}
 		};
 
