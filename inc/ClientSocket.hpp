@@ -21,10 +21,11 @@ class ClientSocket : public ASocket {
 
 	private :
 	
-		std::string _password;
-		std::string _userNick;
-		std::string _userName;
-		char _buffer[1024];
+		std::string	_password;
+		std::string	_userNick;
+		std::string	_userName;
+		char 		_buffer[1024];
+		bool		_isConnect;
 		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);

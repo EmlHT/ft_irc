@@ -12,7 +12,7 @@
 
 #include "inc/ClientSocket.hpp"
 
-ClientSocket::ClientSocket(int fd) : ASocket(fd)
+ClientSocket::ClientSocket(int fd) : ASocket(fd), _isConnect(false) 
 {
 }
 
