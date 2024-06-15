@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 17:53:46 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/14 11:22:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,12 +274,17 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target
 		text = text.substr(1);
 	for (it; it != ite; it++)
 	{
-		if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
+		if (it[0] == "#")
+		{
+			if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
+				send(channelFd, text.c_str(), text.size(), 0);
+			else
+				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
+		}
+		else if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
 			send(targetFd, text.c_str(), text.size(), 0);
-		else if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
-			send(channelFd, text.c_str(), text.size(), 0);
 		else
-			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick/channel" << std::endl;
+			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
 	}
 }
 
