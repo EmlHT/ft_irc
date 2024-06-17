@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 17:49:12 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/17 17:26:19 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include "ASocket.hpp"
 #include "ListenSocket.hpp"
 #include "ClientSocket.hpp"
+#include "Channel.hpp"
 #include <errno.h>
 
 #define SERV_NAME "42.nice.gg"
@@ -35,7 +36,7 @@ class Server {
 		ListenSocket				_listener;
 		std::vector<ClientSocket*>	_clientSocket; // Vecteur des clients connectes
 		static int					_buffer_recv_limit;
-		//std::vector<Channels*> _channelSocket; // Vecteur des channels connectes
+		std::vector<Channel*> 		_channelSocket; // Vecteur des channels connectes
 		std::vector<struct pollfd>	_pollVec;
 		Server();
 		Server(const Server &src);
