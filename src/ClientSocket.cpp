@@ -40,6 +40,11 @@ const std::string	ClientSocket::getPass() const
     return this->_password;
 }
 
+bool	ClientSocket::getIsConnect() const
+{
+    return this->_isConnect;
+}
+
 void 	ClientSocket::setNick(std::string nick)
 {
     this->_userNick = nick;
@@ -53,4 +58,9 @@ void 	ClientSocket::setName(std::string name)
 void 	ClientSocket::setPass(std::string password)
 {
     this->_password = password;
+}
+
+void 	ClientSocket::setIsConnect()
+{
+    this->_isConnect = true;
 }

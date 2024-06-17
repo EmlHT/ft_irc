@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "inc/Server.hpp"
-#include <stdlib.h>
 
 #include <stdio.h>
 
@@ -70,25 +69,17 @@ void	Server::initServer()
 	addInStructPollfd(_listener.getSocketFd(), POLLIN);
 	while (true)
 	{
-//		std::cout << "TEST1 : " << _pollVec.size()<< std::endl;
-//		std::cout << "TEST1 : " << _clientSocket.size() << std::endl;
 		int nbPollRevent = poll(_pollVec.data(), _pollVec.size(), -1);
 		if (nbPollRevent < 0) {
-//			std::cout << "TEST : dans if" << std::endl;
 			std::cerr << errno << std::endl;
 			break;
 		}
-//		std::cout << "TEST2 : " << _pollVec.size() << std::endl;
-//		std::cout << "TEST2 : " << _clientSocket.size() << std::endl;
 		for (size_t i = 0; i < _pollVec.size(); i++)
 		{
-//			std::cout << "TEST : hi" << std::endl;
 			if (_pollVec[i].revents & POLLIN)
 			{
 				if (_pollVec[i].fd == _listener.getSocketFd()) //acceptNewClient
 				{
-//					std::cout << "TEST : OOO" << std::endl;
-//					exit(1);
 					int client_socket = _listener.AcceptConnection();
 					if (client_socket < 0)
 						continue ;
@@ -103,9 +94,7 @@ void	Server::initServer()
 				}
 				else //clientTreats
 				{
-//					std::cout << "TEST : HHH" << std::endl;
-//					exit(1);
-					char	*bufferContent = (char *) searchfd(_pollVec[i].fd);
+					char	*bufferContent = (char *) searchfd(_pollVec[i].fd)->getBuffer();
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
 //					std::cout << "recv " << bufferContent << std::endl;
 //					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -127,8 +116,11 @@ void	Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						parseBuffer(bufferContent, _pollVec[i].fd, i);
-						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
+						if (searchfd(_pollVec[i].fd)->getIsConnect() == false)
+							this->firstConnection(bufferContent, _pollVec[i].fd, i);
+						else
+							parseBuffer(bufferContent, _pollVec[i].fd, i);
+//						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
 //						std::cout << "Send " << bufferContent << std::endl;
 					}
 				}
@@ -145,14 +137,14 @@ void	Server::addInStructPollfd(int fd, short event)
 	_pollVec.push_back(NewPoll);
 }
 
-char const	*Server::searchfd(int fd) const
+/*char const*/ClientSocket	*Server::searchfd(int fd) const
 {
 	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
 	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
 	for (it = _clientSocket.begin(); it != ite; it++)
 	{
 		if (fd == (*it)->getSocketFd())
-			return (*it)->getBuffer();
+			return (*it)/*->getBuffer()*/;
 	}
 	return NULL;
 }
@@ -176,6 +168,10 @@ std::string getSecondWord(const std::string& str)
 		return "";
 	}
 	return secondWord;
+}
+
+void	Server::firstConnection(char *buffer, int pollVecFd, int index)
+{
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)

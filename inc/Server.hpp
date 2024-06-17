@@ -41,23 +41,24 @@ class Server {
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
 
-		void	addInStructPollfd(int fd, short event);
-		char const	*searchfd(int fd) const;
-		void	parseBuffer(char *buffer, int pollVecFd, int index);
+		void			addInStructPollfd(int fd, short event);
+		ClientSocket	*searchfd(int fd) const;
+		void			firstConnection(char *buffer, int pollVecFd, int index);
+		void			parseBuffer(char *buffer, int pollVecFd, int index);
 
-		void	cmdKick(std::string buffer, int pollVecFd, int index);
-		void	cmdInvite(std::string buffer, int pollVecFd, int index);
-		void	cmdTopic(std::string buffer, int pollVecFd, int index);
-		void	cmdMode(std::string buffer, int pollVecFd, int index);
-		void	cmdQuit(std::string buffer, int pollVecFd, int index);
-		void	cmdNick(std::string buffer, int pollVecFd, int index);
-		void	cmdUser(std::string buffer, int pollVecFd, int index);
-		void	cmdPass(std::string buffer, int pollVecFd, int index);
-		void	cmdPrivsmg(std::string buffer, int pollVecFd, int index);
-		void	cmdJoin(std::string buffer, int pollVecFd, int index);
-		void	cmdPart(std::string buffer, int pollVecFd, int index);
+		void			cmdKick(std::string buffer, int pollVecFd, int index);
+		void			cmdInvite(std::string buffer, int pollVecFd, int index);
+		void			cmdTopic(std::string buffer, int pollVecFd, int index);
+		void			cmdMode(std::string buffer, int pollVecFd, int index);
+		void			cmdQuit(std::string buffer, int pollVecFd, int index);
+		void			cmdNick(std::string buffer, int pollVecFd, int index);
+		void			cmdUser(std::string buffer, int pollVecFd, int index);
+		void			cmdPass(std::string buffer, int pollVecFd, int index);
+		void			cmdPrivsmg(std::string buffer, int pollVecFd, int index);
+		void			cmdJoin(std::string buffer, int pollVecFd, int index);
+		void			cmdPart(std::string buffer, int pollVecFd, int index);
 
-		int		needMoreParams(std::string buffer, ClientSocket* client);
+		int				needMoreParams(std::string buffer, ClientSocket* client);
 
 		template < typename T >
 		int findFdTarget(std::vector<T>& TSockets, const std::string& targetNick) {

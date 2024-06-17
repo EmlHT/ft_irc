@@ -39,7 +39,9 @@ class ClientSocket : public ASocket {
 		const std::string	getNick() const;
 		const std::string	getName() const;
 		const std::string	getPass() const;
+		bool 				getIsConnect() const;
 		void 				setNick(std::string nick);
 		void 				setName(std::string name);
 		void 				setPass(std::string password);
+		void 				setIsConnect();
 };
