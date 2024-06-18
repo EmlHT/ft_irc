@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/14 11:22:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/17 17:39:53 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,14 @@ void	Server::initServer()
 				{
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd)->getBuffer();
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
+//					std::cout << "recv " << bufferContent << std::endl;
+//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//					while (*bufferContent)
+//					{
+//						printf(">%c< %d\n", *bufferContent, *bufferContent);
+//						bufferContent++;
+//					}
+//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
@@ -191,7 +199,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 	void (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
-		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
+		/*&Server::cmdPrivsmg,*/ &Server::cmdJoin, &Server::cmdPart};
 	for (i = 0; i < sizeof(tokensList) / sizeof(tokensList[0]); i++)
 	{
 		if (tokensList[i].compare(firstWord) == 0)
@@ -291,8 +299,20 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
+		return;
+	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
+	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+	{
+		if (target == (*it)->getName())
+		{
+			// add le user a la liste du channel en question
+			return;
+		}
+	}
+	// add un nouveau channel avec lúser en operator
+	
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
