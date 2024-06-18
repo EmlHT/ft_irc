@@ -96,14 +96,6 @@ void	Server::initServer()
 				{
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd)->getBuffer();
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
-//					std::cout << "recv " << bufferContent << std::endl;
-//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-//					while (*bufferContent)
-//					{
-//						printf(">%c< %d\n", *bufferContent, *bufferContent);
-//						bufferContent++;
-//					}
-//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
@@ -116,6 +108,7 @@ void	Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
+//Creer un fonction qui verifie la ou les lignes recu, si celle-ci ne se termine pas par \r\n, les concatenner avec les ligne suivantes qui arrivent
 						if (searchfd(_pollVec[i].fd)->getIsConnect() == false)
 							this->firstConnection(bufferContent, _pollVec[i].fd, i);
 						else
@@ -172,6 +165,19 @@ std::string getSecondWord(const std::string& str)
 
 void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 {
+	std::cout << "first connection : " << buffer << std::endl;
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	for (size_t i = 0; i < strlen(buffer); ++i)
+	{
+		if (buffer[i] == '\r' && buffer[i + 1] == '\n')
+			printf("%ld\n", i);
+	}
+//	while (*buffer)
+//	{
+//		printf(">%c< %d\n", *buffer, *buffer);
+//		buffer++;
+//	}
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)

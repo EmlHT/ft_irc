@@ -26,6 +26,7 @@ class ClientSocket : public ASocket {
 		std::string	_userName;
 		char 		_buffer[1024];
 		bool		_isConnect;
+		bool		_checkConnection[4];
 		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);
@@ -40,8 +41,10 @@ class ClientSocket : public ASocket {
 		const std::string	getName() const;
 		const std::string	getPass() const;
 		bool 				getIsConnect() const;
+		const bool	 		*getCheckConnection() const;
 		void 				setNick(std::string nick);
 		void 				setName(std::string name);
 		void 				setPass(std::string password);
 		void 				setIsConnect();
+		void	 			setCheckConnection(bool property, int index);
 };
