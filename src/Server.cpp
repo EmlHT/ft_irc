@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/17 17:39:53 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/18 18:25:45 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,12 +260,12 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target
 	std::vector<std::string> targets;
 	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
 	size_t pos = 0, coma;
-	while (pos != std::string::npos)
-	{
-		if ((coma = buffer.find("'", pos)) != std::string::npos)
-			targets.push_back(buffer.substr(pos, coma - 1));
-		pos = coma + 1;
-	}
+	while ((coma = target.find(",", pos)) != std::string::npos) {
+        targets.push_back(target.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    targets.push_back(target.substr(pos));
+	
 	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
 		text = text.substr(1);
 	for (it; it != ite; it++)
@@ -288,17 +288,50 @@ void	Server::cmdJoin(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
 		return;
-	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
-	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
-	{
-		if (target == (*it)->getName())
-		{
-			// add le user a la liste du channel en question
-			return;
-		}
-	}
-	// add un nouveau channel avec lúser en operator
+	std::string target = getFirstWord(buffer), pass = getSecondWord(buffer);
+
+	std::vector<std::string> targets;
+	std::vector<std::string> passwords;
+
+	size_t pos = 0, coma;
+	while ((coma = target.find(",", pos)) != std::string::npos) {
+        targets.push_back(target.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    targets.push_back(target.substr(pos));
+
+	pos = 0;
+	while ((coma = pass.find(",", pos)) != std::string::npos) {
+        passwords.push_back(pass.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    passwords.push_back(pass.substr(pos));
 	
+	if (passwords.size() < targets.size())
+        passwords.resize(targets.size());
+
+	for (size_t i = 0; i < targets.size(); ++i) {
+        std::string channelName = targets[i];
+        std::string channelPassword = passwords[i];
+        bool channelExists = false;
+        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it) {
+            if (channelName == (*it)->getName()) {
+                channelExists = true;
+                if ((*it)->getPassword() == channelPassword)
+                    (*it)->addUser(_clientSocket.at(index));
+                else 
+                    std::cout << SERV_NAME << " 473 " << _clientSocket.at(index)->getNick() << " " << channelName << " JOIN :Cannot join channel (+k)" << std::endl;
+                break;
+            }
+        }
+        if (!channelExists)
+		{
+            Channel* newChannel = new Channel(channelName, channelPassword);
+            newChannel->addUser(_clientSocket.at(index));
+            _channelSocket.push_back(newChannel);
+            newChannel->setOperator(_clientSocket.at(index));
+        }
+    }
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {

@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/17 17:26:19 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/18 13:01:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
+#include <map>
 #include <poll.h>
 #include <limits.h>
 #include "ASocket.hpp"
