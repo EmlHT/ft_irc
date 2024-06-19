@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:40:57 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 11:38:33 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class ClientSocket : public ASocket {
 		std::string	_userName;
 		char 		_buffer[1024];
 		bool		_isConnect;
+		int			_nbJoinChannels;
 		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);
@@ -39,9 +40,12 @@ class ClientSocket : public ASocket {
 		const std::string	getNick() const;
 		const std::string	getName() const;
 		const std::string	getPass() const;
+		const int			getNbJoinChannels() const;
 		bool 				getIsConnect() const;
 		void 				setNick(std::string nick);
 		void 				setName(std::string name);
 		void 				setPass(std::string password);
 		void 				setIsConnect();
+		void				setAddJoinChannels();
+		void				setSubJoinChannels();
 };

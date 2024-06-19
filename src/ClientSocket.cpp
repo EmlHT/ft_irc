@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:36:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/12 12:43:45 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 11:39:44 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,11 @@ bool	ClientSocket::getIsConnect() const
     return this->_isConnect;
 }
 
+const int	ClientSocket::getNbJoinChannels() const
+{
+    return this->_nbJoinChannels;
+}
+
 void 	ClientSocket::setNick(std::string nick)
 {
     this->_userNick = nick;
@@ -63,4 +68,14 @@ void 	ClientSocket::setPass(std::string password)
 void 	ClientSocket::setIsConnect()
 {
     this->_isConnect = true;
+}
+
+void	ClientSocket::setAddJoinChannels()
+{
+    this->_nbJoinChannels++;
+}
+
+void	ClientSocket::setSubJoinChannels()
+{
+    this->_nbJoinChannels--;
 }

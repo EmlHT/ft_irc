@@ -6,15 +6,16 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/18 18:22:07 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 12:16:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vector>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include "ClientSocket.hpp"
 #include "Server.hpp"
 
@@ -51,9 +52,10 @@ class Channel
 
 		std::string 	getName() const;
 		std::string 	getPassword() const;
+		std::vector<ClientSocket*> getListClients() const;
 		_modes			getModes() const;
 		void			setTopic(std::string topic);
 		void			setPassword(std::string password);
 		void			setOperator(ClientSocket* client);
-		void			addUser(ClientSocket* client);
+		void			addUser(ClientSocket* client, std::string password);
 };
