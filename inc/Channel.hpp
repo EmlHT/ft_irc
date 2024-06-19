@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 12:16:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 17:13:39 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ class Channel
 		{
 			bool _i = false;
 			std::vector<std::string> _listInvited;
-			bool _t = false;
+			bool _t = true;
 			bool _k = false;
 			bool _l = false;
 			int _limitValue;
@@ -50,12 +50,17 @@ class Channel
 		Channel (std::string name, std::string password);
 		~Channel();
 
-		std::string 	getName() const;
-		std::string 	getPassword() const;
-		std::vector<ClientSocket*> getListClients() const;
-		_modes			getModes() const;
-		void			setTopic(std::string topic);
-		void			setPassword(std::string password);
-		void			setOperator(ClientSocket* client);
-		void			addUser(ClientSocket* client, std::string password);
+		std::string 				getName() const;
+		std::string 				getPassword() const;
+		std::vector<ClientSocket*> 	getListClients() const;
+		_modes						getModes() const;
+		
+		void						setTopic(std::string topic);
+		void						setPassword(std::string password);
+		void						setOperator(ClientSocket* client);
+		void						addUser(ClientSocket* client, std::string password);
+		
+		void						broadcastMessage(std::string &message);
+		std::string					activeModes();
+		
 };

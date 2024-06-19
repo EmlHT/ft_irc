@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 12:20:04 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 17:23:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,4 +84,37 @@ void		Channel::addUser(ClientSocket* client, std::string password)
 void		Channel::setOperator(ClientSocket* client)
 {
 	this->modes._listOperator.push_back(client->getNick());
+}
+
+void		Channel::broadcastMessage(std::string &message)
+{
+	for(int i = 0; i < this->_listClients.size(); i++)
+	{
+		this->_listClients[i]->sendMessage(message);
+	}
+}
+
+std::string intToString(int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}
+
+std::string	Channel::activeModes()
+{
+	std::string modesOn = "+Cns";
+	if (this->modes._i)
+		modesOn = "+Cins";
+	if (this->modes._t)
+		modesOn = modesOn + "t";
+	if (this->modes._l)
+		modesOn = modesOn + "l";
+	if (this->modes._k)
+		modesOn = modesOn + "k";
+	if (this->modes._l)
+		modesOn = modesOn + " " + intToString(modes._limitValue);
+	if (this->modes._k)
+		modesOn = modesOn + " " + _channelPass;
+	return (modesOn);
 }

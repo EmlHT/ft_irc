@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/18 13:01:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 16:43:33 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Server {
 		static int					_buffer_recv_limit;
 		std::vector<Channel*> 		_channelSocket; // Vecteur des channels connectes
 		std::vector<struct pollfd>	_pollVec;
+		
 		Server();
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);

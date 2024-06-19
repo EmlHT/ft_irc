@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 12:52:26 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/19 16:46:26 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,6 +250,7 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
 {
+	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
 		return;
 	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
@@ -321,35 +322,52 @@ void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
         std::string channelName = targets[i];
         std::string channelPassword = passwords[i];
         bool channelExists = false;
+		Channel* channel;
+		
         for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
             if (channelName == (*it)->getName()) 
 			{
                 channelExists = true;
-                (*it)->addUser(_clientSocket.at(index), channelPassword);
+				channel = *it;
+                channel->addUser(_clientSocket.at(index), channelPassword);
+				break;
             }
         }
         if (!channelExists)
 		{
-            Channel* newChannel = new Channel(channelName, channelPassword);
-            newChannel->addUser(_clientSocket.at(index), channelPassword);
-			if (newChannel->getListClients().empty())
+            channel = new Channel(channelName, channelPassword);
+            channel->addUser(_clientSocket.at(index), channelPassword);
+			if (channel->getListClients().empty())
 			{
-				delete newChannel;
+				delete channel;
 				return;
 			}
-            _channelSocket.push_back(newChannel);
-            newChannel->setOperator(_clientSocket.at(index));
+            _channelSocket.push_back(channel);
+            channel->setOperator(_clientSocket.at(index));
+        }
+        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
+        channel->broadcastMessage(joinMessage);
+
+        std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
+        _clientSocket.at(index)->sendMessage(modeMessage);
+
+        std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
+        std::vector<ClientSocket*> clients = channel->getListClients();
+        for (size_t j = 0; j < clients.size(); ++j) {
+            namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+        }
+        _clientSocket.at(index)->sendMessage(namesMessage);
+
+        std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
+        _clientSocket.at(index)->sendMessage(endNamesMessage);
+
+        for (size_t j = 0; j < clients.size(); ++j) {
+            if (clients[j] != _clientSocket.at(index)) {
+                clients[j]->sendMessage(joinMessage);
+            }
         }
     }
-	// ajouter ici l'envoie d'un message au nouvel arrivant du topic, de la liste des personnes, etc...
-	/*exemple :
-	JOIN #42Nice
-	:ALORS!~ALORS@2a01:e0a:a57:ad70:c3c:1b77:8ede:3d9e JOIN #42Nice
-	:zirconium.libera.chat MODE #42Nice +Cnst
-	:zirconium.libera.chat 353 ALORS @ #42Nice :@ALORS
-	:zirconium.libera.chat 366 ALORS #42Nice :End of /NAMES list.*/
-	//ajouter ici l'envoie d'un message a tous les Clients de la liste que tel user s'est connecté
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
