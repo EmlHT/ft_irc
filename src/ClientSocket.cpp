@@ -14,17 +14,15 @@
 
 /*
  * The privates variables _checkConnection index correspond to:
- * 0 : CAP
- * 1 : PASS
- * 2 : NICK
- * 3 : USER
+ * 0 : PASS
+ * 1 : NICK
+ * 2 : USER
 */
 ClientSocket::ClientSocket(int fd) : ASocket(fd), _isConnect(false) 
 {
 	this->_checkConnection[0] = false;
 	this->_checkConnection[1] = false;
 	this->_checkConnection[2] = false;
-	this->_checkConnection[3] = false;
 }
 
 ClientSocket::~ClientSocket()

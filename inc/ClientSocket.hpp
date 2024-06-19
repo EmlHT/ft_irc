@@ -26,7 +26,7 @@ class ClientSocket : public ASocket {
 		std::string	_userName;
 		char 		_buffer[1024];
 		bool		_isConnect;
-		bool		_checkConnection[4];
+		bool		_checkConnection[3];
 		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);

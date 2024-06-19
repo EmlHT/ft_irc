@@ -60,16 +60,17 @@ class Server {
 		void			cmdPart(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client);
+		void			clientSocketEraser(int fd);
 
-		template < typename T >
-		int findFdTarget(std::vector<T>& TSockets, const std::string& targetNick) {
-			for (typename std::vector<T>::const_iterator it = TSockets.begin(); it != TSockets.end(); ++it)
-			{
-				if (it->getNick() == targetNick || it->getName() == targetNick)
-					return it->getSocketFd();
-			}
-			return -1;
-		}
+//		template < typename T >
+//		int findFdTarget(std::vector<T>& TSockets, const std::string& targetNick) {
+//			for (typename std::vector<T>::const_iterator it = TSockets.begin(); it != TSockets.end(); ++it)
+//			{
+//				if (it->getNick() == targetNick || it->getName() == targetNick)
+//					return it->getSocketFd();
+//			}
+//			return -1;
+//		}
 
 	public :
 

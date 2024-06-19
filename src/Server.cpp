@@ -12,7 +12,7 @@
 
 #include "inc/Server.hpp"
 
-#include <stdio.h>
+//#include <stdio.h>
 
 Server::Server(unsigned short port, std::string password) : _port(port),
 	_password(password)
@@ -53,7 +53,7 @@ void	Server::checkPassword(char *password) const
 
 	while (password[i])
 	{
-		if (password[i] < ' ' || password[i] > '~')
+		if (password[i] < '!' || password[i] > '~')
 			throw PasswordProblem();
 		i++;
 	}
@@ -97,17 +97,11 @@ void	Server::initServer()
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd)->getBuffer();
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
 //					std::cout << "recv " << bufferContent << std::endl;
-//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-//					while (*bufferContent)
-//					{
-//						printf(">%c< %d\n", *bufferContent, *bufferContent);
-//						bufferContent++;
-//					}
-//					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
 						}
+						clientSocketEraser(_pollVec[i].fd);
 						close(_pollVec[i].fd);
 						_pollVec.erase(_pollVec.begin() + i);
 						--i;
@@ -130,6 +124,17 @@ void	Server::initServer()
 	}
 }
 
+void	Server::clientSocketEraser(int fd)
+{
+	std::vector<ClientSocket*>::iterator it = _clientSocket.begin();
+	std::vector<ClientSocket*>::iterator ite = _clientSocket.end();
+	for (it = _clientSocket.begin(); it != ite; it++)
+	{
+		if (fd == (*it)->getSocketFd())
+			_clientSocket.erase(it);
+	}
+}
+
 void	Server::addInStructPollfd(int fd, short event)
 {
 	pollfd NewPoll;
@@ -138,14 +143,14 @@ void	Server::addInStructPollfd(int fd, short event)
 	_pollVec.push_back(NewPoll);
 }
 
-/*char const*/ClientSocket	*Server::searchfd(int fd) const
+ClientSocket	*Server::searchfd(int fd) const
 {
 	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
 	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
 	for (it = _clientSocket.begin(); it != ite; it++)
 	{
 		if (fd == (*it)->getSocketFd())
-			return (*it)/*->getBuffer()*/;
+			return (*it);
 	}
 	return NULL;
 }
@@ -173,19 +178,30 @@ std::string getSecondWord(const std::string& str)
 
 void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 {
-	std::cout << "first connection : " << buffer << std::endl;
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	size_t	start = 0;
+	std::string str(buffer);
+
 	for (size_t i = 0; i < strlen(buffer); ++i)
 	{
+//		if (buffer[i] == '\n')
 		if (buffer[i] == '\r' && buffer[i + 1] == '\n')
-			printf("%ld\n", i);
+		{
+			if (str.substr(start, 5).compare("PASS ") == 0)
+				cmdPass((char *)str.substr(start, i - start).c_str(), pollVecFd, index);
+//			start = i + 1;
+			start = i + 2;
+			i++;
+		}
 	}
+
+//	std::cout << "first connection : " << buffer << std::endl;
+//	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 //	while (*buffer)
 //	{
 //		printf(">%c< %d\n", *buffer, *buffer);
 //		buffer++;
 //	}
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
@@ -223,101 +239,102 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 }
 
 void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
+	if (searchfd(_pollVec[index].fd)->getCheckConnection()[0] == true)
+		std::cerr << SERV_NAME << " " << "462"
+			<< " " << searchfd(pollVecFd)->getNick()
+			<< " " << ":You may not reregister" << std::endl;
+	else
+	{
+		int	i = 5;
+		while (buffer[i]) {
+			if (buffer[i] < '!' || buffer[i] > '~') {
+				std::cerr << SERV_NAME << " " << "464"
+					<< " " << searchfd(pollVecFd)->getNick()
+					<< " " << ":Password incorrect" << std::endl;
+				return ;
+			}
+			i++;
+		}
+		std::cout << "SECOND" << std::endl;
+		searchfd(_pollVec[index].fd)->setCheckConnection(true, 0);
+	}
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
 {
-	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
-		return;
-	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
-
-	if (text == "") // Check si pas de text
-		std::cout << SERV_NAME << " 412 " << _clientSocket.at(index)->getNick() << " PRIVMSG :No text to send" << std::endl;
-
-	std::vector<std::string> targets;
-	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
-	size_t pos = 0, coma;
-	while (pos != std::string::npos)
-	{
-		if ((coma = buffer.find("'", pos)) != std::string::npos)
-			targets.push_back(buffer.substr(pos, coma - 1));
-		pos = coma + 1;
-	}
-	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
-		text = text.substr(1);
-	for (it; it != ite; it++)
-	{
-		if (it[0] == "#")
-		{
-			if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
-				send(channelFd, text.c_str(), text.size(), 0);
-			else
-				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
-		}
-		else if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
-			send(targetFd, text.c_str(), text.size(), 0);
-		else
-			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
-	}
+//	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
+//		return;
+//	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
+//
+//	if (text == "") // Check si pas de text
+//		std::cout << SERV_NAME << " 412 " << _clientSocket.at(index)->getNick() << " PRIVMSG :No text to send" << std::endl;
+//
+//	std::vector<std::string> targets;
+//	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
+//	size_t pos = 0, coma;
+//	while (pos != std::string::npos)
+//	{
+//		if ((coma = buffer.find("'", pos)) != std::string::npos)
+//			targets.push_back(buffer.substr(pos, coma - 1));
+//		pos = coma + 1;
+//	}
+//	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
+//		text = text.substr(1);
+//	for (it; it != ite; it++)
+//	{
+//		if (it[0] == "#")
+//		{
+//			if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
+//				send(channelFd, text.c_str(), text.size(), 0);
+//			else
+//				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
+//		}
+//		else if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
+//			send(targetFd, text.c_str(), text.size(), 0);
+//		else
+//			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
+//	}
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(pollVecFd);
-	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
-		return;
-	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
-	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
-	{
-		if (target == (*it)->getName())
-		{
-			// add le user a la liste du channel en question
-			return;
-		}
-	}
-	// add un nouveau channel avec lúser en operator
-	
+//	static_cast<void>(pollVecFd);
+//	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
+//		return;
+//	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
+//	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+//	{
+//		if (target == (*it)->getName())
+//		{
+//			// add le user a la liste du channel en question
+//			return;
+//		}
+//	}
+//	// add un nouveau channel avec lúser en operator
+//	
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 int	Server::_buffer_recv_limit = 512;
