@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 14:04:40 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/07 12:11:51 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:09:06 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <string>
 #include <sstream>
 #include <string.h>
-#include "inc/Server.hpp"
+#include "Server.hpp"
 
 unsigned short charToUShort(const char *str)
 {

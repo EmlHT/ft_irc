@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 16:43:33 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:22:35 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,17 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
-#include <map>
 #include <poll.h>
+#include <errno.h>
 #include <limits.h>
+#include "Channel.hpp"
 #include "ASocket.hpp"
 #include "ListenSocket.hpp"
 #include "ClientSocket.hpp"
-#include "Channel.hpp"
-#include <errno.h>
 
-#define SERV_NAME "42.nice.gg"
+# define SERV_NAME "42.nice.gg"
+
+class Channel;
 
 class Server {
 
@@ -35,9 +36,9 @@ class Server {
 		unsigned short				_port;
 		std::string					_password;
 		ListenSocket				_listener;
-		std::vector<ClientSocket*>	_clientSocket; // Vecteur des clients connectes
+		std::vector<ClientSocket*>	_clientSocket;
+		std::vector<Channel*>		_channelSocket;
 		static int					_buffer_recv_limit;
-		std::vector<Channel*> 		_channelSocket; // Vecteur des channels connectes
 		std::vector<struct pollfd>	_pollVec;
 		
 		Server();
@@ -63,15 +64,8 @@ class Server {
 
 		int				needMoreParams(std::string buffer, ClientSocket* client);
 
-		template < typename T >
-		int findFdTarget(std::vector<T>& TSockets, const std::string& targetNick) {
-			for (typename std::vector<T>::const_iterator it = TSockets.begin(); it != TSockets.end(); ++it)
-			{
-				if (it->getNick() == targetNick || it->getName() == targetNick)
-					return it->getSocketFd();
-			}
-			return -1;
-		}
+		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
+		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);
 
 	public :
 
@@ -109,4 +103,5 @@ class Server {
 					return strerror(errno);
 				}
 		};
+
 };

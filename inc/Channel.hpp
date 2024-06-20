@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 17:13:39 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 16:54:21 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,35 +19,35 @@
 #include "ClientSocket.hpp"
 #include "Server.hpp"
 
-class Channel 
-{
+class Channel {
+
 	private :
 
 		std::string _name;
 		std::vector<ClientSocket*> _listClients;
 		std::string _topic;
 		std::string _channelPass;
-		bool		_isPass = false;
+		bool		_isPass;
 		struct _modes
 		{
-			bool _i = false;
+			bool _i;
 			std::vector<std::string> _listInvited;
-			bool _t = true;
-			bool _k = false;
-			bool _l = false;
+			bool _t;
+			bool _k;
+			bool _l;
 			int _limitValue;
 			std::vector<std::string> _listOperator;
 		};
 
 		_modes modes;
 
+		Channel();
 		Channel(const Channel &src);
 		Channel & operator=(const Channel &rhs);
-		Channel();
 
 	public :
 
-		Channel (std::string name, std::string password);
+		Channel(std::string name, std::string password);
 		~Channel();
 
 		std::string 				getName() const;

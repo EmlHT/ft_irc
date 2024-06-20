@@ -6,11 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:36:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 16:33:47 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:08:43 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/ClientSocket.hpp"
+#include "ClientSocket.hpp"
 
 ClientSocket::ClientSocket(int fd) : ASocket(fd), _isConnect(false) 
 {
@@ -43,12 +43,12 @@ const std::string	ClientSocket::getPass() const
     return this->_password;
 }
 
-const bool		ClientSocket::getIsConnect() const
+bool		ClientSocket::getIsConnect() const
 {
     return this->_isConnect;
 }
 
-const int	ClientSocket::getNbJoinChannels() const
+int	        ClientSocket::getNbJoinChannels() const
 {
     return this->_nbJoinChannels;
 }
@@ -94,14 +94,13 @@ void		ClientSocket::setClientIP()
 {
 	struct sockaddr_storage clientAddr;
     socklen_t addrLen = sizeof(clientAddr);
-    char clientIP[INET_ADDRSTRLEN];
 
     if (getsockname(this->_sockfd, (struct sockaddr *)&clientAddr, &addrLen) == 0)
 	{
         struct sockaddr_in *s = (struct sockaddr_in *)&clientAddr;
-		this->_clientIPMutex.lock();
+		// this->_clientIPMutex.lock();
         this->_clientIP = inet_ntoa(s->sin_addr);
-		this->_clientIPMutex.unlock();
+		// this->_clientIPMutex.unlock();
     }
 	else
         std::cerr << "Problem with the recuperation of the IP adress of the client" << std::endl;

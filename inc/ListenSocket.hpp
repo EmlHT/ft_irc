@@ -6,13 +6,13 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:55:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/07 12:23:01 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:08:15 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "inc/ASocket.hpp"
+#include "ASocket.hpp"
 
 class ListenSocket : public ASocket {
 

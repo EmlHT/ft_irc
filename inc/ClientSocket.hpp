@@ -6,19 +6,18 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 15:58:46 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:05:00 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "inc/ASocket.hpp"
+#include "ASocket.hpp"
 #include <vector>
 #include <iostream>
 #include <string>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <mutex>
 
 class ClientSocket : public ASocket {
 
@@ -31,8 +30,6 @@ class ClientSocket : public ASocket {
 		bool		_isConnect;
 		int			_nbJoinChannels;
 		char*		_clientIP;
-
-		std::mutex	_clientIPMutex;
 		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);
@@ -47,8 +44,8 @@ class ClientSocket : public ASocket {
 		const std::string	getNick() const;
 		const std::string	getName() const;
 		const std::string	getPass() const;
-		const int			getNbJoinChannels() const;
-		const bool 			getIsConnect() const;
+		int					getNbJoinChannels() const;
+		bool 				getIsConnect() const;
 		const char *		getClientIP() const;
 
 		void 				setNick(std::string nick);

@@ -6,16 +6,19 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 17:23:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:20:16 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/Channel.hpp"
-
+#include "Channel.hpp"
 #include <stdio.h>
 
 Channel::Channel(std::string name, std::string password) : _name(name), _channelPass(password), _isPass(!password.empty())
 {
+	modes._i = false;
+	modes._t = true;
+	modes._k = false;
+	modes._l = false;
 }
 
 Channel::~Channel()
@@ -72,7 +75,7 @@ void		Channel::addUser(ClientSocket* client, std::string password)
 			return;
 		}
 	}
-	if (this->modes._l && this->_listClients.size() >= this->modes._limitValue)
+	if (this->modes._l && this->_listClients.size() >= static_cast<size_t>(this->modes._limitValue))
 	{
 		std::cout << SERV_NAME << " 471 " << client->getNick() << " " << this->_name << " JOIN :Cannot join channel (+l)" << std::endl;
 		return;
@@ -88,7 +91,7 @@ void		Channel::setOperator(ClientSocket* client)
 
 void		Channel::broadcastMessage(std::string &message)
 {
-	for(int i = 0; i < this->_listClients.size(); i++)
+	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)
 	{
 		this->_listClients[i]->sendMessage(message);
 	}

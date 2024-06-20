@@ -6,12 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 16:46:26 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:10:19 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/Server.hpp"
-
+#include "Server.hpp"
 #include <stdio.h>
 
 Server::Server(unsigned short port, std::string password) : _port(port),
@@ -208,6 +207,24 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 	return 0;
 }
 
+int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick) {
+    for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+	{
+		if ((*it)->getNick() == targetNick || (*it)->getName() == targetNick)
+			return (*it)->getSocketFd();
+	}
+	return -1;
+}
+
+Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& targetName) {
+	for (std::vector<Channel*>::const_iterator it = vec.begin(); it != vec.end(); ++it) 
+	{
+		if ((*it)->getName() == targetName)
+			return (*it);
+	}
+	return NULL;
+}
+
 void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
@@ -269,16 +286,16 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target
 	
 	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
 		text = text.substr(1);
-	for (it; it != ite; it++)
+	for (it = targets.begin(); it != ite; it++)
 	{
 		if (it[0] == "#")
 		{
-			if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
-				send(channelFd, text.c_str(), text.size(), 0);
+			if (Channel *channel = findChannelName(_channelSocket, *it))
+				channel->broadcastMessage(text);
 			else
 				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
 		}
-		else if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
+		else if (int targetFd = findClientSocketFd(_clientSocket, *it) != -1)
 			send(targetFd, text.c_str(), text.size(), 0);
 		else
 			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
