@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 17:45:12 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 17:49:17 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,7 +279,6 @@ void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
         	_clientSocket.at(index)->sendMessage(noChannelMessage);
         }
 	}
-	
 }
 
 
@@ -318,7 +317,6 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 	if (text == "")
 	{
 		std::string NoTextMessage = std::string(SERV_NAME) + " 412 " + _clientSocket.at(index)->getNick() + "PRIVMSG :No text to send";
-
  		_clientSocket.at(index)->sendMessage(NoTextMessage);
 	}
 	std::vector<std::string> targets;
