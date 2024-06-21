@@ -40,6 +40,7 @@ class Server {
 		std::vector<Channel*>		_channelSocket;
 		static int					_buffer_recv_limit;
 		std::vector<struct pollfd>	_pollVec;
+		std::string					_concatBuffer;
 		
 		Server();
 		Server(const Server &src);
@@ -63,6 +64,8 @@ class Server {
 		void			cmdPart(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client);
+		void			clientSocketEraser(int fd);
+		size_t			isTerminatedByN(char *buffer) const;
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);

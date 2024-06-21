@@ -52,7 +52,7 @@ void	Server::checkPassword(char *password) const
 
 	while (password[i])
 	{
-		if (password[i] < ' ' || password[i] > '~')
+		if (password[i] < '!' || password[i] > '~')
 			throw PasswordProblem();
 		i++;
 	}
@@ -95,18 +95,11 @@ void	Server::initServer()
 				{
 					char	*bufferContent = (char *) searchfd(_pollVec[i].fd)->getBuffer();
 					ssize_t bytes_received = recv(_pollVec[i].fd, (void *) bufferContent, Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
-					std::cout << "recv " << bufferContent << std::endl;
-					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-					while (*bufferContent)
-					{
-						printf(">%c< %d\n", *bufferContent, *bufferContent);
-						bufferContent++;
-					}
-					std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 					if (bytes_received <= 0) {
 						if (bytes_received < 0) {
 							std::cerr << errno << std::endl;
 						}
+						clientSocketEraser(_pollVec[i].fd);
 						close(_pollVec[i].fd);
 						_pollVec.erase(_pollVec.begin() + i);
 						--i;
@@ -115,15 +108,39 @@ void	Server::initServer()
 					else
 					{
 						bufferContent[bytes_received] = '\0';
-						if (searchfd(_pollVec[i].fd)->getIsConnect() == false)
-							this->firstConnection(bufferContent, _pollVec[i].fd, i);
-						else
-							parseBuffer(bufferContent, _pollVec[i].fd, i);
-//						send(_pollVec[i].fd, (void *) bufferContent, bytes_received, 0); // a mettre en fin de fonctions
-//						std::cout << "Send " << bufferContent << std::endl;
+						if (isTerminatedByN(bufferContent) == 0)
+							this->_concatBuffer += std::string(bufferContent);
+						else if (!(std::string(bufferContent).compare("\n") == 0
+								|| std::string(bufferContent).compare("\r\n") == 0))
+						{
+							this->_concatBuffer += std::string(bufferContent);
+							if (isTerminatedByN(bufferContent) == 1)
+								this->_concatBuffer = this->_concatBuffer.substr(0, this->_concatBuffer.size() - 2);
+							else if (isTerminatedByN(bufferContent) == 2)
+								this->_concatBuffer = this->_concatBuffer.substr(0, this->_concatBuffer.size() - 1);
+							if (searchfd(_pollVec[i].fd)->getIsConnect() == false)
+								this->firstConnection((char *)this->_concatBuffer.c_str(), _pollVec[i].fd, i);
+							else
+								parseBuffer((char *)this->_concatBuffer.c_str(), _pollVec[i].fd, i);
+							this->_concatBuffer.clear();
+						}
 					}
 				}
 			}
+		}
+	}
+}
+
+void	Server::clientSocketEraser(int fd)
+{
+	std::vector<ClientSocket*>::iterator it = _clientSocket.begin();
+	std::vector<ClientSocket*>::iterator ite = _clientSocket.end();
+	for (it = _clientSocket.begin(); it != ite; it++)
+	{
+		if (fd == (*it)->getSocketFd())
+		{
+			delete *it;
+			_clientSocket.erase(it);
 		}
 	}
 }
@@ -136,14 +153,14 @@ void	Server::addInStructPollfd(int fd, short event)
 	_pollVec.push_back(NewPoll);
 }
 
-/*char const*/ClientSocket	*Server::searchfd(int fd) const
+ClientSocket	*Server::searchfd(int fd) const
 {
 	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
 	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
 	for (it = _clientSocket.begin(); it != ite; it++)
 	{
 		if (fd == (*it)->getSocketFd())
-			return (*it)/*->getBuffer()*/;
+			return (*it);
 	}
 	return NULL;
 }
@@ -169,8 +186,35 @@ std::string getSecondWord(const std::string& str)
 	return secondWord;
 }
 
+size_t	Server::isTerminatedByN(char *buffer) const {
+	size_t	len = strlen(buffer);
+	if (len > 1 && buffer[len - 2] == '\r' && buffer[len - 1] == '\n')
+		return 1;
+	if (len > 0 && buffer[len - 1] == '\n')
+		return 2;
+	return 0;
+}
+
 void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 {
+	size_t	start = 0;
+	std::string str(buffer);
+
+	for (size_t i = 0; i < strlen(buffer); ++i)
+	{
+		if ((buffer[i] == '\r' && buffer[i + 1] == '\n')
+				|| buffer[i + 1] == '\0')
+		{
+			if (getFirstWord(&str[start]).compare("PASS") == 0)
+				cmdPass((char *)str.substr(start, i + 1 - start).c_str(),
+						pollVecFd, index);
+			if (buffer[i] == '\r' && buffer[i + 1] == '\n')
+			{
+				start = i + 2;
+				i++;
+			}
+		}
+	}
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
@@ -184,7 +228,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 	void (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
-		/*&Server::cmdPrivsmg,*/ &Server::cmdJoin, &Server::cmdPart};
+		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
 	for (i = 0; i < sizeof(tokensList) / sizeof(tokensList[0]); i++)
 	{
 		if (tokensList[i].compare(firstWord) == 0)
@@ -194,8 +238,10 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 			break ;
 		}
 	}
-//	if (i == 11)
-//		throw BufferProblem();
+	if (i == 11)
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "421"
+				+ " " + searchfd(pollVecFd)->getNick()
+				+ " " + firstWord + " " + ":Unknown command" + "\r\n");
 }
 
 int	Server::needMoreParams(std::string buffer, ClientSocket* client)
@@ -226,13 +272,9 @@ Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& 
 }
 
 void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
@@ -283,28 +325,61 @@ void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 
 
 void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
 }
 
 void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
-	static_cast<void>(pollVecFd);
+	if (getSecondWord(buffer) == "")
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + "PASS"
+				+ " " + ":Not enough parameters" + "\r\n");
+	else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0] == true) {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
+				+ " " + "462" + " " + searchfd(pollVecFd)->getNick()
+				+ " " + ":You may not reregister" + "\r\n");
+	}
+	else
+	{
+		int	i = 0;
+		while (getSecondWord(buffer).c_str()[i]) {
+			if (getSecondWord(buffer).c_str()[i] < '!'
+					|| getSecondWord(buffer).c_str()[i] > '~') {
+				searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
+						+ " " + "464" + " " + searchfd(pollVecFd)->getNick()
+						+ " " + ":Password incorrect" + "\r\n");
+				searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
+						+ " " + searchfd(pollVecFd)->getNick()
+						+ " " + "ERROR" + " " + ":Connection timeout" + "\r\n");
+				clientSocketEraser(pollVecFd);
+				close(pollVecFd);
+				_pollVec.erase(_pollVec.begin() + index);
+				return ;
+			}
+			i++;
+		}
+		if (getSecondWord(buffer).compare(_password) != 0)
+		{
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "464"
+					+ " " + searchfd(pollVecFd)->getNick()
+					+ " " + ":Password incorrect" + "\r\n");
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
+					+ " " + searchfd(pollVecFd)->getNick()
+					+ " " + "ERROR" + " " + ":Connection timeout" + "\r\n");
+			clientSocketEraser(pollVecFd);
+			close(pollVecFd);
+			_pollVec.erase(_pollVec.begin() + index);
+		}
+		else
+			searchfd(_pollVec[index].fd)->setCheckConnection(true, 0);
+	}
 }
 
 void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)

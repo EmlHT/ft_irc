@@ -54,14 +54,14 @@ class Channel {
 		std::string 				getPassword() const;
 		std::vector<ClientSocket*> 	getListClients() const;
 		_modes						getModes() const;
-		
+
 		void						setTopic(std::string topic);
 		void						setPassword(std::string password);
 		void						setOperator(ClientSocket* client);
 		void						addUser(ClientSocket* client, std::string &password);
 		void						deleteUser(ClientSocket* client);
 		void						removeOperator(ClientSocket* client);
-		
+
 		void						broadcastMessage(std::string &message);
 		std::string					activeModes();
 		bool						isOperator(ClientSocket* client);

@@ -12,8 +12,20 @@
 
 #include "ClientSocket.hpp"
 
+/*
+ * The privates variables _checkConnection index correspond to:
+ * 0 : PASS
+ * 1 : NICK
+ * 2 : USER
+*/
 ClientSocket::ClientSocket(int fd) : ASocket(fd), _isConnect(false) 
 {
+	_userNick = "*";
+	_userName = "*";
+	_realName = "*";
+	this->_checkConnection[0] = false;
+	this->_checkConnection[1] = false;
+	this->_checkConnection[2] = false;
 	setClientIP();
 }
 
@@ -48,6 +60,11 @@ bool		ClientSocket::getIsConnect() const
     return this->_isConnect;
 }
 
+const bool	*ClientSocket::getCheckConnection() const
+{
+    return this->_checkConnection;
+}
+
 int	        ClientSocket::getNbJoinChannels() const
 {
     return this->_nbJoinChannels;
@@ -78,6 +95,11 @@ void        ClientSocket::setPass(std::string password)
 void		ClientSocket::setIsConnect()
 {
     this->_isConnect = true;
+}
+
+void	ClientSocket::setCheckConnection(bool property, int index)
+{
+	this->_checkConnection[index] = property;
 }
 
 void		ClientSocket::setAddJoinChannels()
