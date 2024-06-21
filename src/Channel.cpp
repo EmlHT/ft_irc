@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/20 17:20:16 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 16:20:18 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void		Channel::setPassword(std::string password)
 	this->_isPass = !password.empty();
 }
 
-void		Channel::addUser(ClientSocket* client, std::string password)
+void		Channel::addUser(ClientSocket* client, std::string &password)
 {
 	if (this->modes._i)
 	{
@@ -82,6 +82,40 @@ void		Channel::addUser(ClientSocket* client, std::string password)
 	}
 	this->_listClients.push_back(client);
 	client->setAddJoinChannels();
+}
+
+void		Channel::deleteUser(ClientSocket* client)
+{
+	std::vector<ClientSocket*>::iterator it = this->_listClients.begin();
+	while (it != this->_listClients.end())
+	{
+		if (client == (*it))
+		{
+			this->_listClients.erase(it);
+			break;
+		}
+		else
+			++it;
+	}
+	client->setSubJoinChannels();
+	removeOperator(client);
+	if (this->_listClients.empty())
+        delete this;
+}
+
+void		Channel::removeOperator(ClientSocket* client)
+{
+	std::vector<std::string>::iterator it = this->modes._listOperator.begin();
+	while (it != this->modes._listOperator.end())
+	{
+		if (client->getNick() == (*it))
+		{
+			this->modes._listOperator.erase(it);
+			break;
+		}
+		else
+			++it;
+	}
 }
 
 void		Channel::setOperator(ClientSocket* client)

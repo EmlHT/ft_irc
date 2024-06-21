@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/20 16:54:21 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 16:17:04 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,9 @@ class Channel {
 		void						setTopic(std::string topic);
 		void						setPassword(std::string password);
 		void						setOperator(ClientSocket* client);
-		void						addUser(ClientSocket* client, std::string password);
+		void						addUser(ClientSocket* client, std::string &password);
+		void						deleteUser(ClientSocket* client);
+		void						removeOperator(ClientSocket* client);
 		
 		void						broadcastMessage(std::string &message);
 		std::string					activeModes();
