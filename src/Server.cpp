@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 16:21:40 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 17:45:12 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,6 +323,7 @@ void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	}
 	
 }
+
 
 void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 }
