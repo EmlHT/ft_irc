@@ -6,12 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 16:46:26 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 16:21:40 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/Server.hpp"
-
+#include "Server.hpp"
 #include <stdio.h>
 
 Server::Server(unsigned short port, std::string password) : _port(port),
@@ -254,6 +253,24 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 	return 0;
 }
 
+int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick) {
+    for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+	{
+		if ((*it)->getNick() == targetNick || (*it)->getName() == targetNick)
+			return (*it)->getSocketFd();
+	}
+	return -1;
+}
+
+Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& targetName) {
+	for (std::vector<Channel*>::const_iterator it = vec.begin(); it != vec.end(); ++it) 
+	{
+		if ((*it)->getName() == targetName)
+			return (*it);
+	}
+	return NULL;
+}
+
 void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 }
 
@@ -261,6 +278,50 @@ void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
+	static_cast<void>(pollVecFd);
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return;
+	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
+	bool channelExists = false;
+	Channel* channel;
+    for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+	{
+		if (channelName == (*it)->getName())
+		{
+			channelExists = true;
+			channel = *it;
+			std::vector<ClientSocket*> listClient = channel->getListClients();
+			for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
+			{
+				if (_clientSocket.at(index) == (*itl))
+				{
+					if (channel->isOperator(_clientSocket.at(index)))
+					{
+						channel->setTopic(topic);
+						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
+        				channel->broadcastMessage(topicMessage);
+						break;
+					}
+					else
+					{
+						std::string notOperatorMessage = std::string(SERV_NAME) + " 482 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not channel operator";
+        				_clientSocket.at(index)->sendMessage(notOperatorMessage);
+					}
+				}
+				else
+				{
+					std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
+        			_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+				}
+			}
+		}
+		if (!channelExists)
+		{
+			std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+        	_clientSocket.at(index)->sendMessage(noChannelMessage);
+        }
+	}
+	
 }
 
 void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
@@ -321,134 +382,180 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 	}
 }
 
-void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
+void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 {
-//	static_cast<void>(pollVecFd);
-//	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
-//		return;
-//	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
-//
-//	if (text == "") // Check si pas de text
-//		std::cout << SERV_NAME << " 412 " << _clientSocket.at(index)->getNick() << " PRIVMSG :No text to send" << std::endl;
-//
-//	std::vector<std::string> targets;
-//	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
-//	size_t pos = 0, coma;
-//	while ((coma = target.find(",", pos)) != std::string::npos) {
-//        targets.push_back(target.substr(pos, coma - pos));
-//        pos = coma + 1;
-//    }
-//    targets.push_back(target.substr(pos));
-//	
-//	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
-//		text = text.substr(1);
-//	for (it; it != ite; it++)
-//	{
-//		if (it[0] == "#")
-//		{
-//			if (int channelFd = findFdTarget(_channelSocket, *it) != -1)
-//				send(channelFd, text.c_str(), text.size(), 0);
-//			else
-//				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
-//		}
-//		else if (int targetFd = findFdTarget(_clientSocket, *it) != -1)
-//			send(targetFd, text.c_str(), text.size(), 0);
-//		else
-//			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
-//	}
+	static_cast<void>(pollVecFd);
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return;
+	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
+
+	if (text == "")
+	{
+		std::string NoTextMessage = std::string(SERV_NAME) + " 412 " + _clientSocket.at(index)->getNick() + "PRIVMSG :No text to send";
+
+ 		_clientSocket.at(index)->sendMessage(NoTextMessage);
+	}
+	std::vector<std::string> targets;
+	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
+	size_t pos = 0, coma;
+	while ((coma = target.find(",", pos)) != std::string::npos) {
+        targets.push_back(target.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    targets.push_back(target.substr(pos));
+	
+	if (size_t doubleP = text.find(":") != std::string::npos && (doubleP == 0))
+		text = text.substr(1);
+	for (it = targets.begin(); it != ite; it++)
+	{
+		if (it[0] == "#")
+		{
+			if (Channel *channel = findChannelName(_channelSocket, *it))
+				channel->broadcastMessage(text);
+			else
+				std::cout << SERV_NAME << " 401 " << _channelSocket.at(index)->getName() << " " << *it << " PRIVMSG :No such channel" << std::endl;
+		}
+		else if (int targetFd = findClientSocketFd(_clientSocket, *it) != -1)
+			send(targetFd, text.c_str(), text.size(), 0);
+		else
+			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
+	}
 }
 
 void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 {
-//	static_cast<void>(pollVecFd);
-//	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
-//		return;
-//	std::string target = getFirstWord(buffer), pass = getSecondWord(buffer);
-//
-//	std::vector<std::string> targets;
-//	std::vector<std::string> passwords;
-//
-//	size_t pos = 0, coma;
-//	while ((coma = target.find(",", pos)) != std::string::npos) {
-//        targets.push_back(target.substr(pos, coma - pos));
-//        pos = coma + 1;
-//    }
-//    targets.push_back(target.substr(pos));
-//
-//	pos = 0;
-//	while ((coma = pass.find(",", pos)) != std::string::npos) {
-//        passwords.push_back(pass.substr(pos, coma - pos));
-//        pos = coma + 1;
-//    }
-//    passwords.push_back(pass.substr(pos));
-//
-//	if (passwords.size() < targets.size())
-//        passwords.resize(targets.size());
-//
-//	if (_clientSocket.at(index)->getNbJoinChannels() >= 10)
-//	{
-//		std::cout << SERV_NAME << " 405 " << _clientSocket.at(index)->getNick() << " " << targets[0] << " :You have joined too many channels" << std::endl;
-//        return;
-//	}
-//	for (size_t i = 0; i < targets.size(); ++i)
-//	{
-//        std::string channelName = targets[i];
-//        std::string channelPassword = passwords[i];
-//        bool channelExists = false;
-//		Channel* channel;
-//		
-//        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
-//		{
-//            if (channelName == (*it)->getName()) 
-//			{
-//                channelExists = true;
-//				channel = *it;
-//                channel->addUser(_clientSocket.at(index), channelPassword);
-//				break;
-//            }
-//        }
-//        if (!channelExists)
-//		{
-//            channel = new Channel(channelName, channelPassword);
-//            channel->addUser(_clientSocket.at(index), channelPassword);
-//			if (channel->getListClients().empty())
-//			{
-//				delete channel;
-//				return;
-//			}
-//            _channelSocket.push_back(channel);
-//            channel->setOperator(_clientSocket.at(index));
-//        }
-//        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
-//        channel->broadcastMessage(joinMessage);
-//
-//        std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
-//        _clientSocket.at(index)->sendMessage(modeMessage);
-//
-//        std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
-//        std::vector<ClientSocket*> clients = channel->getListClients();
-//        for (size_t j = 0; j < clients.size(); ++j) {
-//            namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
-//        }
-//        _clientSocket.at(index)->sendMessage(namesMessage);
-//
-//        std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
-//        _clientSocket.at(index)->sendMessage(endNamesMessage);
-//
-//        for (size_t j = 0; j < clients.size(); ++j) {
-//            if (clients[j] != _clientSocket.at(index)) {
-//                clients[j]->sendMessage(joinMessage);
-//            }
-//        }
-//    }
+	static_cast<void>(pollVecFd);
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return;
+	std::string target = getFirstWord(buffer), pass = getSecondWord(buffer);
+
+	std::vector<std::string> targets;
+	std::vector<std::string> passwords;
+
+	size_t pos = 0, coma;
+	while ((coma = target.find(",", pos)) != std::string::npos) {
+        targets.push_back(target.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    targets.push_back(target.substr(pos));
+
+	pos = 0;
+	while ((coma = pass.find(",", pos)) != std::string::npos) {
+        passwords.push_back(pass.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    passwords.push_back(pass.substr(pos));
+
+	if (passwords.size() < targets.size())
+        passwords.resize(targets.size());
+
+	if (_clientSocket.at(index)->getNbJoinChannels() >= 10)
+	{
+		std::cout << SERV_NAME << " 405 " << _clientSocket.at(index)->getNick() << " " << targets[0] << " :You have joined too many channels" << std::endl;
+        return;
+	}
+	for (size_t i = 0; i < targets.size(); ++i)
+	{
+        std::string channelName = targets[i];
+        std::string channelPassword = passwords[i];
+        bool channelExists = false;
+		Channel* channel;
+		
+        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+		{
+            if (channelName == (*it)->getName()) 
+			{
+                channelExists = true;
+				channel = *it;
+                channel->addUser(_clientSocket.at(index), channelPassword);
+				break;
+            }
+        }
+        if (!channelExists)
+		{
+            channel = new Channel(channelName, channelPassword);
+            channel->addUser(_clientSocket.at(index), channelPassword);
+			if (channel->getListClients().empty())
+			{
+				delete channel;
+				return;
+			}
+            _channelSocket.push_back(channel);
+            channel->setOperator(_clientSocket.at(index));
+        }
+        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
+        channel->broadcastMessage(joinMessage);
+
+        std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
+        _clientSocket.at(index)->sendMessage(modeMessage);
+
+        std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
+        std::vector<ClientSocket*> clients = channel->getListClients();
+        for (size_t j = 0; j < clients.size(); ++j) {
+            namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+        }
+        _clientSocket.at(index)->sendMessage(namesMessage);
+
+        std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
+        _clientSocket.at(index)->sendMessage(endNamesMessage);
+
+        for (size_t j = 0; j < clients.size(); ++j) {
+            if (clients[j] != _clientSocket.at(index)) {
+                clients[j]->sendMessage(joinMessage);
+            }
+        }
+    }
 }
 
 void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
-	/*exemple :
-	PART #42Paris
-	:ALORS!~ALORS@2a01:e0a:a57:ad70:c3c:1b77:8ede:3d9e PART #42Paris*/
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return;
+	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
+		
+	std::vector<std::string> channelsList;
+	size_t pos = 0, coma;
+	while ((coma = channels.find(",", pos)) != std::string::npos) {
+        channelsList.push_back(channels.substr(pos, coma - pos));
+        pos = coma + 1;
+    }
+    channelsList.push_back(channels.substr(pos));
+	
+	for (size_t i = 0; i < channelsList.size(); i++)
+	{
+		std::string channelName = channelsList[i];
+		bool channelExists = false;
+		Channel* channel;
+
+        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+		{
+            if (channelName == (*it)->getName())
+			{
+                channelExists = true;
+				channel = *it;
+				std::vector<ClientSocket*> listClient = channel->getListClients();
+				for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
+				{
+					if (_clientSocket.at(index) == (*itl))
+					{
+						std::string partMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " PART " + channelName + " :" + reason;
+        				channel->broadcastMessage(partMessage);
+						channel->deleteUser(*itl);
+					}
+					else
+					{
+						std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
+        				_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+					}
+				}
+            }
+			if (!channelExists)
+			{
+				std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+        		_clientSocket.at(index)->sendMessage(noChannelMessage);
+        	}
+		}
+	}
 }
 
 int	Server::_buffer_recv_limit = 512;

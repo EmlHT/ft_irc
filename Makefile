@@ -2,14 +2,14 @@ SRC_MAIN 	= 	main.cpp \
 				src/ClientSocket.cpp \
 				src/ListenSocket.cpp \
 				src/Server.cpp \
+				src/Channel.cpp \
 
-				
 
 SRC			= ${SRC_MAIN}
 
 OBJ			= ${SRC:.cpp=.o}
 
-HEADER		= ./
+HEADER		= inc
 
 CC 			= c++
 

@@ -6,11 +6,11 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:36:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 16:33:47 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 16:10:31 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/ClientSocket.hpp"
+#include "ClientSocket.hpp"
 
 /*
  * The privates variables _checkConnection index correspond to:
@@ -26,7 +26,7 @@ ClientSocket::ClientSocket(int fd) : ASocket(fd), _isConnect(false)
 	this->_checkConnection[0] = false;
 	this->_checkConnection[1] = false;
 	this->_checkConnection[2] = false;
-//	setClientIP();
+	setClientIP();
 }
 
 ClientSocket::~ClientSocket()
@@ -65,10 +65,10 @@ const bool	*ClientSocket::getCheckConnection() const
     return this->_checkConnection;
 }
 
-//const int	ClientSocket::getNbJoinChannels() const
-//{
-//    return this->_nbJoinChannels;
-//}
+int	        ClientSocket::getNbJoinChannels() const
+{
+    return this->_nbJoinChannels;
+}
 
 const char* ClientSocket::getClientIP() const
 {
@@ -112,22 +112,21 @@ void		ClientSocket::setSubJoinChannels()
     this->_nbJoinChannels--;
 }
 
-//void		ClientSocket::setClientIP()
-//{
-//	struct sockaddr_storage clientAddr;
-//    socklen_t addrLen = sizeof(clientAddr);
-//    char clientIP[INET_ADDRSTRLEN];
-//
-//    if (getsockname(this->_sockfd, (struct sockaddr *)&clientAddr, &addrLen) == 0)
-//	{
-//        struct sockaddr_in *s = (struct sockaddr_in *)&clientAddr;
-//		this->_clientIPMutex.lock();
-//        this->_clientIP = inet_ntoa(s->sin_addr);
-//		this->_clientIPMutex.unlock();
-//    }
-//	else
-//        std::cerr << "Problem with the recuperation of the IP adress of the client" << std::endl;
-//}
+void		ClientSocket::setClientIP()
+{
+	struct sockaddr_storage clientAddr;
+    socklen_t addrLen = sizeof(clientAddr);
+
+    if (getsockname(this->_sockfd, (struct sockaddr *)&clientAddr, &addrLen) == 0)
+	{
+        struct sockaddr_in *s = (struct sockaddr_in *)&clientAddr;
+		// this->_clientIPMutex.lock();
+        this->_clientIP = inet_ntoa(s->sin_addr);
+		// this->_clientIPMutex.unlock();
+    }
+	else
+        std::cerr << "Problem with the recuperation of the IP adress of the client" << std::endl;
+}
 
 void		ClientSocket::sendMessage(const std::string &message)
 {

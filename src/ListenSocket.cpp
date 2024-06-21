@@ -6,13 +6,13 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 16:27:26 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/07 12:19:38 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:08:56 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/ASocket.hpp"
-#include "inc/ListenSocket.hpp"
-#include "inc/ClientSocket.hpp"
+#include "ASocket.hpp"
+#include "ListenSocket.hpp"
+#include "ClientSocket.hpp"
 
 ListenSocket::ListenSocket() : ASocket()
 {

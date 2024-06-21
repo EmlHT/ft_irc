@@ -6,24 +6,23 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:18 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 15:58:46 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/20 17:05:00 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "inc/ASocket.hpp"
+#include "ASocket.hpp"
 #include <vector>
 #include <iostream>
 #include <string>
 #include <netdb.h>
 #include <arpa/inet.h>
-//#include <mutex>
 
 class ClientSocket : public ASocket {
 
 	private :
-	
+
 		std::string	_password;
 		std::string	_userNick;
 		std::string	_userName;
@@ -34,8 +33,6 @@ class ClientSocket : public ASocket {
 		int			_nbJoinChannels;
 		char*		_clientIP;
 
-//		std::mutex	_clientIPMutex;
-		
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);
 		ClientSocket & operator=(const ClientSocket &rhs);
@@ -44,14 +41,13 @@ class ClientSocket : public ASocket {
 
 		ClientSocket(int fd);
 		virtual ~ClientSocket();
-		
+
 		const char	 		*getBuffer() const;
 		const std::string	getNick() const;
 		const std::string	getName() const;
 		const std::string	getPass() const;
-//		bool 				getIsConnect() const;
 		const bool	 		*getCheckConnection() const;
-//		const int			getNbJoinChannels() const;
+		int					getNbJoinChannels() const;
 		bool	 			getIsConnect() const;
 		const char *		getClientIP() const;
 
@@ -62,7 +58,7 @@ class ClientSocket : public ASocket {
 		void	 			setCheckConnection(bool property, int index);
 		void				setAddJoinChannels();
 		void				setSubJoinChannels();
-//		void				setClientIP();
-		
+		void				setClientIP();
+
 		void				sendMessage(const std::string &message);
 };

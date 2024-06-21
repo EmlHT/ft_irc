@@ -6,16 +6,19 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/19 17:23:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 16:20:18 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/Channel.hpp"
-
+#include "Channel.hpp"
 #include <stdio.h>
 
 Channel::Channel(std::string name, std::string password) : _name(name), _channelPass(password), _isPass(!password.empty())
 {
+	modes._i = false;
+	modes._t = true;
+	modes._k = false;
+	modes._l = false;
 }
 
 Channel::~Channel()
@@ -54,7 +57,7 @@ void		Channel::setPassword(std::string password)
 	this->_isPass = !password.empty();
 }
 
-void		Channel::addUser(ClientSocket* client, std::string password)
+void		Channel::addUser(ClientSocket* client, std::string &password)
 {
 	if (this->modes._i)
 	{
@@ -72,13 +75,47 @@ void		Channel::addUser(ClientSocket* client, std::string password)
 			return;
 		}
 	}
-	if (this->modes._l && this->_listClients.size() >= this->modes._limitValue)
+	if (this->modes._l && this->_listClients.size() >= static_cast<size_t>(this->modes._limitValue))
 	{
 		std::cout << SERV_NAME << " 471 " << client->getNick() << " " << this->_name << " JOIN :Cannot join channel (+l)" << std::endl;
 		return;
 	}
 	this->_listClients.push_back(client);
 	client->setAddJoinChannels();
+}
+
+void		Channel::deleteUser(ClientSocket* client)
+{
+	std::vector<ClientSocket*>::iterator it = this->_listClients.begin();
+	while (it != this->_listClients.end())
+	{
+		if (client == (*it))
+		{
+			this->_listClients.erase(it);
+			break;
+		}
+		else
+			++it;
+	}
+	client->setSubJoinChannels();
+	removeOperator(client);
+	if (this->_listClients.empty())
+        delete this;
+}
+
+void		Channel::removeOperator(ClientSocket* client)
+{
+	std::vector<std::string>::iterator it = this->modes._listOperator.begin();
+	while (it != this->modes._listOperator.end())
+	{
+		if (client->getNick() == (*it))
+		{
+			this->modes._listOperator.erase(it);
+			break;
+		}
+		else
+			++it;
+	}
 }
 
 void		Channel::setOperator(ClientSocket* client)
@@ -88,7 +125,7 @@ void		Channel::setOperator(ClientSocket* client)
 
 void		Channel::broadcastMessage(std::string &message)
 {
-	for(int i = 0; i < this->_listClients.size(); i++)
+	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)
 	{
 		this->_listClients[i]->sendMessage(message);
 	}
