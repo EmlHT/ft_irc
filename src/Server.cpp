@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 16:21:40 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 17:45:12 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,9 +236,52 @@ void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 }
 
 void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
-	static_cast<void>(buffer);
 	static_cast<void>(pollVecFd);
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return;
+	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
+	bool channelExists = false;
+	Channel* channel;
+    for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+	{
+		if (channelName == (*it)->getName())
+		{
+			channelExists = true;
+			channel = *it;
+			std::vector<ClientSocket*> listClient = channel->getListClients();
+			for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
+			{
+				if (_clientSocket.at(index) == (*itl))
+				{
+					if (channel->isOperator(_clientSocket.at(index)))
+					{
+						channel->setTopic(topic);
+						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
+        				channel->broadcastMessage(topicMessage);
+						break;
+					}
+					else
+					{
+						std::string notOperatorMessage = std::string(SERV_NAME) + " 482 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not channel operator";
+        				_clientSocket.at(index)->sendMessage(notOperatorMessage);
+					}
+				}
+				else
+				{
+					std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
+        			_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+				}
+			}
+		}
+		if (!channelExists)
+		{
+			std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+        	_clientSocket.at(index)->sendMessage(noChannelMessage);
+        }
+	}
+	
 }
+
 
 void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(buffer);
@@ -265,16 +308,19 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(pollVecFd);
 }
 
-void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index) // <target>{,<target>} <text to be sent>
+void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 {
 	static_cast<void>(pollVecFd);
-	if (needMoreParams(buffer, _clientSocket.at(index)) == 461) // Check si pas de parametres
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
 		return;
 	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
 
-	if (text == "") // Check si pas de text
-		std::cout << SERV_NAME << " 412 " << _clientSocket.at(index)->getNick() << " PRIVMSG :No text to send" << std::endl;
+	if (text == "")
+	{
+		std::string NoTextMessage = std::string(SERV_NAME) + " 412 " + _clientSocket.at(index)->getNick() + "PRIVMSG :No text to send";
 
+ 		_clientSocket.at(index)->sendMessage(NoTextMessage);
+	}
 	std::vector<std::string> targets;
 	std::vector<std::string>::iterator it = targets.begin(), ite = targets.end();
 	size_t pos = 0, coma;
@@ -431,8 +477,8 @@ void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
             }
 			if (!channelExists)
 			{
-				std::string notOnChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
-        		_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+				std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+        		_clientSocket.at(index)->sendMessage(noChannelMessage);
         	}
 		}
 	}

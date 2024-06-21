@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 16:20:18 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 17:36:43 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,4 +154,17 @@ std::string	Channel::activeModes()
 	if (this->modes._k)
 		modesOn = modesOn + " " + _channelPass;
 	return (modesOn);
+}
+
+bool		Channel::isOperator(ClientSocket* client)
+{
+	std::vector<std::string>::iterator it = this->modes._listOperator.begin();
+	while (it != this->modes._listOperator.end())
+	{
+		if (client->getNick() == (*it))
+			return true;
+		else
+			++it;
+	}
+	return false;
 }

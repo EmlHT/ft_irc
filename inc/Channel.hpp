@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 16:17:04 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/21 17:29:02 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,5 +64,6 @@ class Channel {
 		
 		void						broadcastMessage(std::string &message);
 		std::string					activeModes();
-		
+		bool						isOperator(ClientSocket* client);
+
 };
