@@ -354,6 +354,8 @@ int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
 }
 
 int	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
+	if (buffer.c_str()[0] == ':')
+		buffer = buffer.substr(1);
 	if (buffer == "")
 		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
 				+ " " + searchfd(pollVecFd)->getNick() + " " + "PASS"
