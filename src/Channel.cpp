@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 17:36:43 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/24 11:40:24 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,36 @@ std::vector<ClientSocket*> Channel::getListClients() const
 	return this->_listClients;
 }
 
-void		Channel::setTopic(std::string topic)
+std::string					Channel::getTopic() const
+{
+	return this->_topic;
+}
+
+std::string					Channel::getTopicSetBy() const
+{
+	return this->_topicSetBy;
+}
+
+time_t					Channel::getTopicSetAt() const
+{
+	return this->_topicSetAt;
+}
+
+void		Channel::setTopicSetBy(std::string &client)
+{
+	this->_topicSetBy = client;
+}
+void		Channel::setTopicSetAt()
+{
+	this->_topicSetAt = time(0);
+}
+void		Channel::setTopic(std::string topic, std::string client)
 {
 	this->_topic = topic;
+	setTopicSetBy(client);
+	setTopicSetAt();
 }
+
 
 void		Channel::setPassword(std::string password)
 {

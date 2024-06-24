@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/24 09:57:41 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/24 11:45:50 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,20 +295,22 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
 	bool channelExists = false;
 	Channel* channel;
-    for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 	{
 		if (channelName == (*it)->getName())
 		{
 			channelExists = true;
 			channel = *it;
 			std::vector<ClientSocket*> listClient = channel->getListClients();
+			bool clientIsOnChannel = false;
 			for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
 			{
 				if (_clientSocket.at(index) == (*itl))
 				{
+					clientIsOnChannel = true;
 					if (channel->isOperator(_clientSocket.at(index)))
 					{
-						channel->setTopic(topic);
+						channel->setTopic(topic, _clientSocket.at(index)->getNick());
 						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
         				channel->broadcastMessage(topicMessage);
 						break;
@@ -316,21 +318,21 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 					else
 					{
 						std::string notOperatorMessage = std::string(SERV_NAME) + " 482 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not channel operator";
-        				_clientSocket.at(index)->sendMessage(notOperatorMessage);
+						_clientSocket.at(index)->sendMessage(notOperatorMessage);
 					}
 				}
-				else
-				{
-					std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
-					_clientSocket.at(index)->sendMessage(notOnChannelMessage);
-				}
+			}
+			if (!clientIsOnChannel)
+			{
+				std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
+				_clientSocket.at(index)->sendMessage(notOnChannelMessage);
 			}
 		}
-		if (!channelExists)
-		{
-			std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
-			_clientSocket.at(index)->sendMessage(noChannelMessage);
-		}
+	}
+	if (!channelExists)
+	{
+		std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+		_clientSocket.at(index)->sendMessage(noChannelMessage);
 	}
 	return (0);
 }
@@ -412,6 +414,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 	if (text == "")
 	{
 		std::string NoTextMessage = std::string(SERV_NAME) + " 412 " + _clientSocket.at(index)->getNick() + "PRIVMSG :No text to send";
+
  		_clientSocket.at(index)->sendMessage(NoTextMessage);
 	}
 	std::vector<std::string> targets;
@@ -454,77 +457,89 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 
 	size_t pos = 0, coma;
 	while ((coma = target.find(",", pos)) != std::string::npos) {
-        targets.push_back(target.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    targets.push_back(target.substr(pos));
+		targets.push_back(target.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	targets.push_back(target.substr(pos));
 
 	pos = 0;
 	while ((coma = pass.find(",", pos)) != std::string::npos) {
-        passwords.push_back(pass.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    passwords.push_back(pass.substr(pos));
+		passwords.push_back(pass.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	passwords.push_back(pass.substr(pos));
 
 	if (passwords.size() < targets.size())
-        passwords.resize(targets.size());
+		passwords.resize(targets.size());
 
 	if (_clientSocket.at(index)->getNbJoinChannels() >= 10)
 	{
 		std::cout << SERV_NAME << " 405 " << _clientSocket.at(index)->getNick() << " " << targets[0] << " :You have joined too many channels" << std::endl;
-        return (0);
+		return (0);
 	}
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
-        std::string channelName = targets[i];
-        std::string channelPassword = passwords[i];
-        bool channelExists = false;
+		std::string channelName = targets[i];
+		std::string channelPassword = passwords[i];
+		bool channelExists = false;
 		Channel* channel;
 		
-        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-            if (channelName == (*it)->getName()) 
+			if (channelName == (*it)->getName()) 
 			{
-                channelExists = true;
+				channelExists = true;
 				channel = *it;
-                channel->addUser(_clientSocket.at(index), channelPassword);
+				channel->addUser(_clientSocket.at(index), channelPassword);
 				break;
-            }
-        }
-        if (!channelExists)
+			}
+		}
+		if (!channelExists)
 		{
-            channel = new Channel(channelName, channelPassword);
-            channel->addUser(_clientSocket.at(index), channelPassword);
+			channel = new Channel(channelName, channelPassword);
+			channel->addUser(_clientSocket.at(index), channelPassword);
 			if (channel->getListClients().empty())
 			{
 				delete channel;
 				return (0);
 			}
-            _channelSocket.push_back(channel);
-            channel->setOperator(_clientSocket.at(index));
+			_channelSocket.push_back(channel);
+			channel->setOperator(_clientSocket.at(index));
         }
-        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
-        channel->broadcastMessage(joinMessage);
+		std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
+		channel->broadcastMessage(joinMessage);
 
-        std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
-        _clientSocket.at(index)->sendMessage(modeMessage);
+		if (!channel->getTopic().empty())
+		{
+			std::stringstream ss;
+			ss << channel->getTopicSetAt();
+			std::string topicSetAtStr = ss.str();
 
-        std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
-        std::vector<ClientSocket*> clients = channel->getListClients();
-        for (size_t j = 0; j < clients.size(); ++j) {
-            namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+			std::string topicMessage = std::string(SERV_NAME) + " 332 " + _clientSocket.at(index)->getNick() + " " + channelName + " :" + channel->getTopic();
+			_clientSocket.at(index)->sendMessage(topicMessage);
+
+			std::string topicWhoTimeMessage = std::string(SERV_NAME) + " 333 " + _clientSocket.at(index)->getNick() + " " + channelName + " " + channel->getTopicSetBy() + " " + topicSetAtStr;
+			_clientSocket.at(index)->sendMessage(topicWhoTimeMessage);
         }
-        _clientSocket.at(index)->sendMessage(namesMessage);
+		std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
+		_clientSocket.at(index)->sendMessage(modeMessage);
 
-        std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
-        _clientSocket.at(index)->sendMessage(endNamesMessage);
+		std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
+		std::vector<ClientSocket*> clients = channel->getListClients();
+		for (size_t j = 0; j < clients.size(); ++j) {
+			namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+		}
+		_clientSocket.at(index)->sendMessage(namesMessage);
 
-        for (size_t j = 0; j < clients.size(); ++j) {
-            if (clients[j] != _clientSocket.at(index)) {
-                clients[j]->sendMessage(joinMessage);
-            }
-        }
-    }
+		std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
+		_clientSocket.at(index)->sendMessage(endNamesMessage);
+
+		for (size_t j = 0; j < clients.size(); ++j) {
+			if (clients[j] != _clientSocket.at(index)) {
+				clients[j]->sendMessage(joinMessage);
+			}
+		}
+	}
 	return (0);
 }
 
