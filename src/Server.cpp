@@ -215,7 +215,7 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 						pollVecFd, index);
 			else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0]
 					&& getFirstWord(&str[start]).compare("NICK") == 0)
-				cmdNick((char *)str.substr(start, i + 1 - start).c_str(),
+				cmdNick(getSecondWord(str.substr(start, i + 1 - start)),
 						pollVecFd, index);
 			if (buffer[i] == '\r' && buffer[i + 1] == '\n')
 			{
@@ -242,7 +242,9 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 	{
 		if (tokensList[i].compare(firstWord) == 0)
 		{
-			std::string bufferRest = str.substr(firstWord.size() + 1);
+			std::string bufferRest = "";
+			if (firstWord.size() + 1 <= str.size())
+				bufferRest = str.substr(firstWord.size() + 1, std::string::npos);
 			(this->*function_table[i])(bufferRest, pollVecFd, index);
 			break ;
 		}
@@ -265,7 +267,7 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick) {
     for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
 	{
-		if ((*it)->getNick() == targetNick || (*it)->getName() == targetNick)
+		if ((*it)->getNick() == targetNick || (*it)->getUserName() == targetNick)
 			return (*it)->getSocketFd();
 	}
 	return -1;
@@ -309,7 +311,7 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 					if (channel->isOperator(_clientSocket.at(index)))
 					{
 						channel->setTopic(topic);
-						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
+						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
         				channel->broadcastMessage(topicMessage);
 						break;
 					}
@@ -343,17 +345,72 @@ int	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
 	return (0);
 }
 
+bool	Server::nickSyntaxChecker(char const *nick) const {
+	if (*nick >= '0' && *nick <= '9')
+		return (false);
+	while (*nick) {
+		if (*nick < '0' || (*nick > '9' && *nick < 'A')
+				|| (*nick > ']' && *nick < 'a') || *nick > '}') {
+			return (false);
+		}
+		nick++;
+	}
+	return (true);
+}
+
+bool	Server::nickExist(std::string nick) const {
+	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
+	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
+	for (it = _clientSocket.begin(); it != ite; it++)
+	{
+		if (nick.compare((*it)->getNick()) == 0 )
+			return (false);
+	}
+	return (true);
+}
+
 int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
-	std::cout << "NICK_IN" << std::endl;
+	if (getFirstWord(buffer).c_str()[0] == ':')
+		buffer = getFirstWord(buffer).substr(1);
+	else
+		buffer = getFirstWord(buffer);
+	if (buffer.compare(searchfd(pollVecFd)->getNick()) == 0)
+		return (1);
+	if (buffer.size() == 0) {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "431"
+				+ " " + searchfd(pollVecFd)->getNick()
+				+ " " + ":No nickname given" + "\r\n");
+		return (1);
+	}
+	if (!nickSyntaxChecker(buffer.c_str())) {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "432"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + buffer
+				+ " " + ":Erroneus nickname" + "\r\n");
+		return (1);
+	}
+	if (!nickExist(buffer)) {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "433"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + buffer
+				+ " " + ":Nickname is already in use" + "\r\n");
+		return (1);
+	}
+	if (searchfd(pollVecFd)->getIsConnect())
+		searchfd(pollVecFd)->sendMessage(searchfd(pollVecFd)->getNick()
+				+ "!~" + searchfd(pollVecFd)->getUserName() + "@" +
+				searchfd(pollVecFd)->getClientIP()
+				+ " NICK :" + buffer + "\r\n");
+	searchfd(pollVecFd)->setNick(buffer);
+	searchfd(_pollVec[index].fd)->setCheckConnection(true, 1);
 	return (0);
 }
 
 int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
-	std::cout << "USER_IN" << std::endl;
+	std::cout << "USER_IN : " << buffer << std::endl;
 	return (0);
 }
 
 int	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
+	std::cout << buffer << std::endl;
 	if (buffer.c_str()[0] == ':')
 		buffer = buffer.substr(1);
 	if (buffer == "")
@@ -504,7 +561,7 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
             _channelSocket.push_back(channel);
             channel->setOperator(_clientSocket.at(index));
         }
-        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
+        std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
         channel->broadcastMessage(joinMessage);
 
         std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
@@ -560,7 +617,7 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 				{
 					if (_clientSocket.at(index) == (*itl))
 					{
-						std::string partMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getName() + "@" + _clientSocket.at(index)->getClientIP() + " PART " + channelName + " :" + reason;
+						std::string partMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " PART " + channelName + " :" + reason;
         				channel->broadcastMessage(partMessage);
 						channel->deleteUser(*itl);
 					}

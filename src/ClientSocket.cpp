@@ -45,7 +45,7 @@ const std::string	ClientSocket::getNick() const
     return this->_userNick;
 }
 
-const std::string	ClientSocket::getName() const
+const std::string	ClientSocket::getUserName() const
 {
     return this->_userName;
 }
@@ -82,7 +82,7 @@ void        ClientSocket::setNick(std::string nick)
     this->_userNick = nick;
 }
 
-void        ClientSocket::setName(std::string name)
+void        ClientSocket::setUserName(std::string name)
 {
     this->_userName = name;
 }
