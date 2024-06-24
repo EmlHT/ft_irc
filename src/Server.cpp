@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/24 09:53:55 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/24 09:57:41 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,8 +205,17 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 		if ((buffer[i] == '\r' && buffer[i + 1] == '\n')
 				|| buffer[i + 1] == '\0')
 		{
-			if (getFirstWord(&str[start]).compare("PASS") == 0)
-				cmdPass((char *)str.substr(start, i + 1 - start).c_str(),
+			if (getFirstWord(&str[start]).compare("PASS") == 0
+					&& cmdPass(getSecondWord(str.substr(start, i + 1 - start)),
+						pollVecFd, index))
+				break ;
+			else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0]
+					&& getFirstWord(&str[start]).compare("USER") == 0)
+				cmdUser((char *)str.substr(start, i + 1 - start).c_str(),
+						pollVecFd, index);
+			else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0]
+					&& getFirstWord(&str[start]).compare("NICK") == 0)
+				cmdNick((char *)str.substr(start, i + 1 - start).c_str(),
 						pollVecFd, index);
 			if (buffer[i] == '\r' && buffer[i + 1] == '\n')
 			{
@@ -225,7 +234,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 	std::string firstWord = getFirstWord(str);
 	std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE", "QUIT",
 		"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
-	void (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
+	int (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
 		&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 		&Server::cmdQuit, &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
 		&Server::cmdPrivsmg, &Server::cmdJoin, &Server::cmdPart};
@@ -271,16 +280,18 @@ Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& 
 	return NULL;
 }
 
-void	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
+	return (0);
 }
 
-void	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
+	return (0);
 }
 
-void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
-		return;
+		return (0);
 	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
 	bool channelExists = false;
 	Channel* channel;
@@ -311,47 +322,54 @@ void	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 				else
 				{
 					std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
-        			_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+					_clientSocket.at(index)->sendMessage(notOnChannelMessage);
 				}
 			}
 		}
 		if (!channelExists)
 		{
 			std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
-        	_clientSocket.at(index)->sendMessage(noChannelMessage);
-        }
+			_clientSocket.at(index)->sendMessage(noChannelMessage);
+		}
 	}
+	return (0);
 }
 
-
-void	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
+	return (0);
 }
 
-void	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
+	return (0);
 }
 
-void	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
+	std::cout << "NICK_IN" << std::endl;
+	return (0);
 }
 
-void	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
+	std::cout << "USER_IN" << std::endl;
+	return (0);
 }
 
-void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
-	if (getSecondWord(buffer) == "")
+int	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
+	if (buffer.c_str()[0] == ':')
+		buffer = buffer.substr(1);
+	if (buffer == "")
 		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
 				+ " " + searchfd(pollVecFd)->getNick() + " " + "PASS"
 				+ " " + ":Not enough parameters" + "\r\n");
-	else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0] == true) {
+	else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0] == true)
 		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
 				+ " " + "462" + " " + searchfd(pollVecFd)->getNick()
 				+ " " + ":You may not reregister" + "\r\n");
-	}
 	else
 	{
 		int	i = 0;
-		while (getSecondWord(buffer).c_str()[i]) {
-			if (getSecondWord(buffer).c_str()[i] < '!'
-					|| getSecondWord(buffer).c_str()[i] > '~') {
+		while (buffer.c_str()[i]) {
+			if (buffer.c_str()[i] < '!'
+					|| buffer.c_str()[i] > '~') {
 				searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
 						+ " " + "464" + " " + searchfd(pollVecFd)->getNick()
 						+ " " + ":Password incorrect" + "\r\n");
@@ -361,11 +379,11 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 				clientSocketEraser(pollVecFd);
 				close(pollVecFd);
 				_pollVec.erase(_pollVec.begin() + index);
-				return ;
+				return (1);
 			}
 			i++;
 		}
-		if (getSecondWord(buffer).compare(_password) != 0)
+		if (buffer.compare(_password) != 0)
 		{
 			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "464"
 					+ " " + searchfd(pollVecFd)->getNick()
@@ -376,17 +394,19 @@ void	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
 			clientSocketEraser(pollVecFd);
 			close(pollVecFd);
 			_pollVec.erase(_pollVec.begin() + index);
+			return (1);
 		}
 		else
 			searchfd(_pollVec[index].fd)->setCheckConnection(true, 0);
 	}
+	return (0);
 }
 
-void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
+int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 {
 	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
-		return;
+		return (0);
 	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
 
 	if (text == "")
@@ -419,13 +439,14 @@ void	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 		else
 			std::cout << SERV_NAME << " 401 " << _clientSocket.at(index)->getNick() << " " << *it << " PRIVMSG :No such nick" << std::endl;
 	}
+	return (0);
 }
 
-void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
+int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 {
 	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
-		return;
+		return (0);
 	std::string target = getFirstWord(buffer), pass = getSecondWord(buffer);
 
 	std::vector<std::string> targets;
@@ -451,7 +472,7 @@ void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 	if (_clientSocket.at(index)->getNbJoinChannels() >= 10)
 	{
 		std::cout << SERV_NAME << " 405 " << _clientSocket.at(index)->getNick() << " " << targets[0] << " :You have joined too many channels" << std::endl;
-        return;
+        return (0);
 	}
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
@@ -477,7 +498,7 @@ void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 			if (channel->getListClients().empty())
 			{
 				delete channel;
-				return;
+				return (0);
 			}
             _channelSocket.push_back(channel);
             channel->setOperator(_clientSocket.at(index));
@@ -504,12 +525,13 @@ void	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
             }
         }
     }
+	return (0);
 }
 
-void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
+int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	static_cast<void>(pollVecFd);
 	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
-		return;
+		return (0);
 	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
 		
 	std::vector<std::string> channelsList;
@@ -555,6 +577,7 @@ void	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
         	}
 		}
 	}
+	return (0);
 }
 
 int	Server::_buffer_recv_limit = 512;
