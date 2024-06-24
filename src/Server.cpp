@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 17:45:12 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/24 17:10:35 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,6 +186,18 @@ std::string getSecondWord(const std::string& str)
 	return secondWord;
 }
 
+std::string getRemainingWords(const std::string& str, int startWord)
+{
+	std::istringstream iss(str);
+	std::string word;
+	for (int i = 0; i < startWord; ++i) {
+        iss >> word;
+    }
+    std::string remaining;
+    std::getline(iss, remaining);
+    return remaining;
+}
+
 size_t	Server::isTerminatedByN(char *buffer) const {
 	size_t	len = strlen(buffer);
 	if (len > 1 && buffer[len - 2] == '\r' && buffer[len - 1] == '\n')
@@ -283,6 +295,65 @@ Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& 
 }
 
 int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
+	if (needMoreParams(buffer, _clientSocket.at(index)) == 461)
+		return (0);
+
+	std::string channelName = getFirstWord(buffer), user = getSecondWord(buffer), reason = getRemainingWords(buffer, 2);
+	std::vector<std::string> users;
+	size_t pos = 0, coma;
+	while ((coma = user.find(",", pos)) != std::string::npos) {
+		users.push_back(user.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	users.push_back(user.substr(pos));
+	if (size_t doubleP = reason.find(":") != std::string::npos && (doubleP == 0))
+		reason = reason.substr(1);
+
+	Channel* channel = findChannelName(_channelSocket, channelName);
+	if (!channel)
+	{
+		std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+		_clientSocket.at(index)->sendMessage(noChannelMessage);
+		return (0);
+	}
+	if (!channel->isOperator(_clientSocket.at(index)))
+	{
+		std::string notOperatorMessage = std::string(SERV_NAME) + " 482 " + channelName + " :You're not channel operator";
+		_clientSocket.at(index)->sendMessage(notOperatorMessage);
+		return (0);
+	}
+	for (size_t i = 0; i < users.size(); i++)
+	{
+		ClientSocket* userToKick = NULL;
+		for (std::vector<ClientSocket*>::iterator it = _clientSocket.begin(); it != _clientSocket.end(); ++it) {
+			if ((*it)->getNick() == users[i] || (*it)->getUserName() == users[i])
+			{
+				userToKick = *it;
+				break;
+			}
+		}
+		if (!userToKick)
+		{
+			std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + users[i] + " :No such nick/channel";
+			_clientSocket.at(index)->sendMessage(noSuchNickMessage);
+			continue;
+		}
+		if (!channel->isMember(userToKick))
+		{
+			std::string notOnChannelMessage = std::string(SERV_NAME) + " 441 " + users[i] + " " + channelName + " :They aren't on that channel";
+			_clientSocket.at(index)->sendMessage(notOnChannelMessage);
+		}
+		std::string kickMessage;
+		if (reason == "")
+		{
+			kickMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " KICK " + channelName + " " + users[i] + " :" + users[i];
+			reason = "";
+		}
+		else
+			kickMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " KICK " + channelName + " " + users[i] + " :" + reason;
+		channel->broadcastMessage(kickMessage);
+		channel->deleteUser(userToKick);
+	}
 	return (0);
 }
 
@@ -297,42 +368,44 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
 	bool channelExists = false;
 	Channel* channel;
-    for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 	{
 		if (channelName == (*it)->getName())
 		{
 			channelExists = true;
 			channel = *it;
 			std::vector<ClientSocket*> listClient = channel->getListClients();
+			bool clientIsOnChannel = false;
 			for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
 			{
 				if (_clientSocket.at(index) == (*itl))
 				{
+					clientIsOnChannel = true;
 					if (channel->isOperator(_clientSocket.at(index)))
 					{
-						channel->setTopic(topic);
+						channel->setTopic(topic, _clientSocket.at(index)->getNick());
 						std::string topicMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " TOPIC " + channelName + " :" + topic;
         				channel->broadcastMessage(topicMessage);
-						break;
 					}
 					else
 					{
 						std::string notOperatorMessage = std::string(SERV_NAME) + " 482 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not channel operator";
-        				_clientSocket.at(index)->sendMessage(notOperatorMessage);
+						_clientSocket.at(index)->sendMessage(notOperatorMessage);
 					}
 				}
-				else
-				{
-					std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
-					_clientSocket.at(index)->sendMessage(notOnChannelMessage);
-				}
+				break;
+			}
+			if (!clientIsOnChannel)
+			{
+				std::string notOnChannelMessage = std::string(SERV_NAME) + " 442 " + _clientSocket.at(index)->getNick() + " " + channelName + " :You're not on that channel";
+				_clientSocket.at(index)->sendMessage(notOnChannelMessage);
 			}
 		}
-		if (!channelExists)
-		{
-			std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
-			_clientSocket.at(index)->sendMessage(noChannelMessage);
-		}
+	}
+	if (!channelExists)
+	{
+		std::string noChannelMessage = std::string(SERV_NAME) + " 403 " + _clientSocket.at(index)->getNick() + " " + channelName + " :No such channel";
+		_clientSocket.at(index)->sendMessage(noChannelMessage);
 	}
 	return (0);
 }
@@ -410,7 +483,6 @@ int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
 }
 
 int	Server::cmdPass(std::string buffer, int pollVecFd, int index) {
-	std::cout << buffer << std::endl;
 	if (buffer.c_str()[0] == ':')
 		buffer = buffer.substr(1);
 	if (buffer == "")
@@ -512,77 +584,89 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 
 	size_t pos = 0, coma;
 	while ((coma = target.find(",", pos)) != std::string::npos) {
-        targets.push_back(target.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    targets.push_back(target.substr(pos));
+		targets.push_back(target.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	targets.push_back(target.substr(pos));
 
 	pos = 0;
 	while ((coma = pass.find(",", pos)) != std::string::npos) {
-        passwords.push_back(pass.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    passwords.push_back(pass.substr(pos));
+		passwords.push_back(pass.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	passwords.push_back(pass.substr(pos));
 
 	if (passwords.size() < targets.size())
-        passwords.resize(targets.size());
+		passwords.resize(targets.size());
 
 	if (_clientSocket.at(index)->getNbJoinChannels() >= 10)
 	{
 		std::cout << SERV_NAME << " 405 " << _clientSocket.at(index)->getNick() << " " << targets[0] << " :You have joined too many channels" << std::endl;
-        return (0);
+		return (0);
 	}
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
-        std::string channelName = targets[i];
-        std::string channelPassword = passwords[i];
-        bool channelExists = false;
+		std::string channelName = targets[i];
+		std::string channelPassword = passwords[i];
+		bool channelExists = false;
 		Channel* channel;
 		
-        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-            if (channelName == (*it)->getName()) 
+			if (channelName == (*it)->getName()) 
 			{
-                channelExists = true;
+				channelExists = true;
 				channel = *it;
-                channel->addUser(_clientSocket.at(index), channelPassword);
+				channel->addUser(_clientSocket.at(index), channelPassword);
 				break;
-            }
-        }
-        if (!channelExists)
+			}
+		}
+		if (!channelExists)
 		{
-            channel = new Channel(channelName, channelPassword);
-            channel->addUser(_clientSocket.at(index), channelPassword);
+			channel = new Channel(channelName, channelPassword);
+			channel->addUser(_clientSocket.at(index), channelPassword);
 			if (channel->getListClients().empty())
 			{
 				delete channel;
 				return (0);
 			}
-            _channelSocket.push_back(channel);
-            channel->setOperator(_clientSocket.at(index));
+			_channelSocket.push_back(channel);
+			channel->setOperator(_clientSocket.at(index));
         }
         std::string joinMessage = ":" + _clientSocket.at(index)->getNick() + "!" + _clientSocket.at(index)->getUserName() + "@" + _clientSocket.at(index)->getClientIP() + " JOIN " + channelName;
         channel->broadcastMessage(joinMessage);
 
-        std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
-        _clientSocket.at(index)->sendMessage(modeMessage);
+		if (!channel->getTopic().empty())
+		{
+			std::stringstream ss;
+			ss << channel->getTopicSetAt();
+			std::string topicSetAtStr = ss.str();
 
-        std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
-        std::vector<ClientSocket*> clients = channel->getListClients();
-        for (size_t j = 0; j < clients.size(); ++j) {
-            namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+			std::string topicMessage = std::string(SERV_NAME) + " 332 " + _clientSocket.at(index)->getNick() + " " + channelName + " :" + channel->getTopic();
+			_clientSocket.at(index)->sendMessage(topicMessage);
+
+			std::string topicWhoTimeMessage = std::string(SERV_NAME) + " 333 " + _clientSocket.at(index)->getNick() + " " + channelName + " " + channel->getTopicSetBy() + " " + topicSetAtStr;
+			_clientSocket.at(index)->sendMessage(topicWhoTimeMessage);
         }
-        _clientSocket.at(index)->sendMessage(namesMessage);
+		std::string modeMessage = std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes();
+		_clientSocket.at(index)->sendMessage(modeMessage);
 
-        std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
-        _clientSocket.at(index)->sendMessage(endNamesMessage);
+		std::string namesMessage = std::string(SERV_NAME) + " 353 " + _clientSocket.at(index)->getNick() + " @ " + channelName + " :";
+		std::vector<ClientSocket*> clients = channel->getListClients();
+		for (size_t j = 0; j < clients.size(); ++j) {
+			namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+		}
+		_clientSocket.at(index)->sendMessage(namesMessage);
 
-        for (size_t j = 0; j < clients.size(); ++j) {
-            if (clients[j] != _clientSocket.at(index)) {
-                clients[j]->sendMessage(joinMessage);
-            }
-        }
-    }
+		std::string endNamesMessage = std::string(SERV_NAME) + " 366 " + _clientSocket.at(index)->getNick() + " " + channelName + " :End of /NAMES list";
+		_clientSocket.at(index)->sendMessage(endNamesMessage);
+
+		for (size_t j = 0; j < clients.size(); ++j) {
+			if (clients[j] != _clientSocket.at(index)) {
+				clients[j]->sendMessage(joinMessage);
+			}
+		}
+	}
 	return (0);
 }
 

@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/21 17:29:02 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/24 16:42:53 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class Channel {
 		std::string _name;
 		std::vector<ClientSocket*> _listClients;
 		std::string _topic;
+		std::string _topicSetBy;
+		time_t 		_topicSetAt;
 		std::string _channelPass;
 		bool		_isPass;
 		struct _modes
@@ -52,10 +54,15 @@ class Channel {
 
 		std::string 				getName() const;
 		std::string 				getPassword() const;
+		std::string					getTopic() const;
+		std::string					getTopicSetBy() const;
+		time_t						getTopicSetAt() const;
 		std::vector<ClientSocket*> 	getListClients() const;
 		_modes						getModes() const;
 
-		void						setTopic(std::string topic);
+		void						setTopic(std::string topic, std::string client);
+		void						setTopicSetBy(std::string &client);
+		void						setTopicSetAt();
 		void						setPassword(std::string password);
 		void						setOperator(ClientSocket* client);
 		void						addUser(ClientSocket* client, std::string &password);
@@ -65,5 +72,6 @@ class Channel {
 		void						broadcastMessage(std::string &message);
 		std::string					activeModes();
 		bool						isOperator(ClientSocket* client);
+		bool						isMember(ClientSocket* client);
 
 };
