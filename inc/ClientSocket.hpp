@@ -45,6 +45,7 @@ class ClientSocket : public ASocket {
 		const char	 		*getBuffer() const;
 		const std::string	getNick() const;
 		const std::string	getUserName() const;
+		const std::string	getRealName() const;
 		const std::string	getPass() const;
 		const bool	 		*getCheckConnection() const;
 		int					getNbJoinChannels() const;
@@ -53,6 +54,7 @@ class ClientSocket : public ASocket {
 
 		void 				setNick(std::string nick);
 		void 				setUserName(std::string name);
+		void 				setRealName(std::string name);
 		void 				setPass(std::string password);
 		void 				setIsConnect();
 		void	 			setCheckConnection(bool property, int index);

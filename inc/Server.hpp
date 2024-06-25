@@ -66,7 +66,8 @@ class Server {
 		int				needMoreParams(std::string buffer, ClientSocket* client);
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
-		bool			nickSyntaxChecker(char const *nick) const;
+		bool			nameSyntaxChecker(char const *nick) const;
+		bool			realNameSyntaxChecker(char const *nick) const;
 		bool			nickExist(std::string nick) const;
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);

@@ -191,11 +191,11 @@ std::string getRemainingWords(const std::string& str, int startWord)
 	std::istringstream iss(str);
 	std::string word;
 	for (int i = 0; i < startWord; ++i) {
-        iss >> word;
-    }
-    std::string remaining;
-    std::getline(iss, remaining);
-    return remaining;
+		iss >> word;
+	}
+	std::string remaining;
+	std::getline(iss, remaining);
+	return remaining;
 }
 
 size_t	Server::isTerminatedByN(char *buffer) const {
@@ -220,10 +220,10 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 			if (getFirstWord(&str[start]).compare("PASS") == 0
 					&& cmdPass(getSecondWord(str.substr(start, i + 1 - start)),
 						pollVecFd, index))
-				break ;
+				return ;
 			else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0]
 					&& getFirstWord(&str[start]).compare("USER") == 0)
-				cmdUser((char *)str.substr(start, i + 1 - start).c_str(),
+				cmdUser((char *)str.substr(start, i + 1 - start).c_str() + 5,
 						pollVecFd, index);
 			else if (searchfd(_pollVec[index].fd)->getCheckConnection()[0]
 					&& getFirstWord(&str[start]).compare("NICK") == 0)
@@ -236,6 +236,10 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 			}
 		}
 	}
+	if (searchfd(pollVecFd)->getCheckConnection()[0]
+			&& searchfd(pollVecFd)->getCheckConnection()[1]
+			&& searchfd(pollVecFd)->getCheckConnection()[2])
+		searchfd(pollVecFd)->setIsConnect();
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
@@ -277,7 +281,7 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client)
 }
 
 int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick) {
-    for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+	for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
 	{
 		if ((*it)->getNick() == targetNick || (*it)->getUserName() == targetNick)
 			return (*it)->getSocketFd();
@@ -418,7 +422,7 @@ int	Server::cmdQuit(std::string buffer, int pollVecFd, int index) {
 	return (0);
 }
 
-bool	Server::nickSyntaxChecker(char const *nick) const {
+bool	Server::nameSyntaxChecker(char const *nick) const {
 	if (*nick >= '0' && *nick <= '9')
 		return (false);
 	while (*nick) {
@@ -455,7 +459,7 @@ int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
 				+ " " + ":No nickname given" + "\r\n");
 		return (1);
 	}
-	if (!nickSyntaxChecker(buffer.c_str())) {
+	if (!nameSyntaxChecker(buffer.c_str())) {
 		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "432"
 				+ " " + searchfd(pollVecFd)->getNick() + " " + buffer
 				+ " " + ":Erroneus nickname" + "\r\n");
@@ -469,7 +473,7 @@ int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
 	}
 	if (searchfd(pollVecFd)->getIsConnect())
 		searchfd(pollVecFd)->sendMessage(searchfd(pollVecFd)->getNick()
-				+ "!~" + searchfd(pollVecFd)->getUserName() + "@" +
+				+ "!" + searchfd(pollVecFd)->getUserName() + "@" +
 				searchfd(pollVecFd)->getClientIP()
 				+ " NICK :" + buffer + "\r\n");
 	searchfd(pollVecFd)->setNick(buffer);
@@ -477,8 +481,92 @@ int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
 	return (0);
 }
 
+bool	Server::realNameSyntaxChecker(char const *nick) const {
+	if (*nick >= '0' && *nick <= '9')
+		return (false);
+	while (*nick) {
+		if (*nick < ' ' || (*nick > ' ' && *nick < '0')
+				|| (*nick > '9' && *nick < 'A') || (*nick > ']' && *nick < 'a')
+				|| *nick > '}')
+			return (false);
+		nick++;
+	}
+	return (true);
+}
+
 int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
-	std::cout << "USER_IN : " << buffer << std::endl;
+	if (searchfd(pollVecFd)->getCheckConnection()[2]) {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME)
+				+ " " + "462" + " " + searchfd(pollVecFd)->getNick()
+				+ " " + ":You may not reregister" + "\r\n");
+		return (1);
+	}
+	if (getFirstWord(buffer) == "") {
+		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+				+ " " + ":Not enough parameters" + "\r\n");
+		return (1);
+	} else {
+		if (buffer.c_str()[getFirstWord(buffer).size()] == '\0') {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		if (!nameSyntaxChecker(getFirstWord(buffer).c_str())) {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		std::string userName = "~" + getFirstWord(buffer);
+		buffer = buffer.substr(getFirstWord(buffer).size() + 1, std::string::npos);
+		if (buffer.c_str()[getFirstWord(buffer).size()] == '\0') {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		if (getFirstWord(buffer).compare("0") != 0) {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		buffer = buffer.substr(getFirstWord(buffer).size() + 1, std::string::npos);
+		if (buffer.c_str()[getFirstWord(buffer).size()] == '\0') {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		if (getFirstWord(buffer).compare("*") != 0) {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		buffer = buffer.substr(getFirstWord(buffer).size() + 1, std::string::npos);
+		if (buffer[0] == ':' && !realNameSyntaxChecker(buffer.c_str() + 1)) {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		} else if (buffer[0] != ':' && !nameSyntaxChecker(getFirstWord(buffer).c_str())) {
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
+					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
+					+ " " + ":Not enough parameters" + "\r\n");
+			return (1);
+		}
+		std::string	realName;
+		if (buffer[0] == ':')
+			realName = buffer.substr(1, std::string::npos);
+		else
+			realName = getFirstWord(buffer);
+		searchfd(pollVecFd)->setUserName(userName);
+		searchfd(pollVecFd)->setRealName(realName);
+		searchfd(_pollVec[index].fd)->setCheckConnection(true, 2);
+	}
 	return (0);
 }
 

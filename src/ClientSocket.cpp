@@ -50,6 +50,11 @@ const std::string	ClientSocket::getUserName() const
     return this->_userName;
 }
 
+const std::string	ClientSocket::getRealName() const
+{
+    return this->_realName;
+}
+
 const std::string	ClientSocket::getPass() const
 {
     return this->_password;
@@ -85,6 +90,11 @@ void        ClientSocket::setNick(std::string nick)
 void        ClientSocket::setUserName(std::string name)
 {
     this->_userName = name;
+}
+
+void        ClientSocket::setRealName(std::string name)
+{
+    this->_realName = name;
 }
 
 void        ClientSocket::setPass(std::string password)
