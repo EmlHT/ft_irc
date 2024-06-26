@@ -23,15 +23,15 @@ class ClientSocket : public ASocket {
 
 	private :
 
-		std::string	_password;
-		std::string	_userNick;
-		std::string	_userName;
-		std::string	_realName;
-		char 		_buffer[1024];
-		bool		_isConnect;
-		bool		_checkConnection[3];
-		int			_nbJoinChannels;
-		char*		_clientIP;
+		std::string		_password;
+		std::string		_userNick;
+		std::string		_userName;
+		std::string		_realName;
+		char 			_buffer[1024];
+		bool			_isConnect;
+		bool			_checkConnection[3];
+		int				_nbJoinChannels;
+		char*			_clientIP;
 
 		ClientSocket();
 		ClientSocket(const ClientSocket &src);

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
+#include <ctime>
 #include <poll.h>
 #include <errno.h>
 #include <limits.h>
@@ -25,14 +26,19 @@
 #include "ListenSocket.hpp"
 #include "ClientSocket.hpp"
 
+# define NETWORK_NAME "42.nice.gg"
 # define SERV_NAME "42.nice.gg"
+# define SERV_VERSION "42.nice.gg-1.0"
+# define MODE "itkol"
+# define MODE_WITH_OPTION "kol"
 
 class Channel;
 
 class Server {
 
 	private :
-
+ 
+		std::string					_datetime;
 		unsigned short				_port;
 		std::string					_password;
 		ListenSocket				_listener;
@@ -72,6 +78,7 @@ class Server {
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);
+		void			welcomeMessages(int pollVecFd) const;
 
 	public :
 

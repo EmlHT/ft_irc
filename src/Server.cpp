@@ -16,6 +16,16 @@
 Server::Server(unsigned short port, std::string password) : _port(port),
 	_password(password)
 {
+	std::time_t	time;
+	std::tm* 	timeinfo;
+
+	std::time(&time);
+	timeinfo = std::gmtime(&time);
+
+	char	buffer[80];
+	strftime(buffer, sizeof(buffer), "%a %b %d %Y at %H:%M:%S UTC", timeinfo);
+
+	this->_datetime = buffer;
 }
 
 Server::~Server()
@@ -207,6 +217,36 @@ size_t	Server::isTerminatedByN(char *buffer) const {
 	return 0;
 }
 
+void	Server::welcomeMessages(int pollVecFd) const {
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "001"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + ":Welcome to the " + NETWORK_NAME + " Network, "
+			+ searchfd(pollVecFd)->getNick() + "\r\n");
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "002"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + ":Your host is " + SERV_NAME + ", running version "
+			+ SERV_VERSION + "\r\n");
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "003"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + ":This server was created "
+			+ this->_datetime + "\r\n");
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "004"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + SERV_NAME + " " + SERV_VERSION + "  " + MODE
+			+ " " + MODE_WITH_OPTION + "\r\n");
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "005"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + "CHANLIMIT=#:25 CHANMODES=i,t,k,o,l CHANNELLEN=50"
+			+ " " + "CHANTYPES=#& MODES=5 NETWORK=42.nice.gg NICKLEN=16"
+			+ " " + "PREFIX=(ov)@+ STATUSMSG=@+ TARGMAX=KICK:1,PRIVMSG:4"
+			+ " " + "TOPICLEN=307 USERLEN=12"
+			+ " " + ":are supported by this server" + "\r\n");
+}
+
 void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 {
 	size_t	start = 0;
@@ -238,8 +278,10 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 	}
 	if (searchfd(pollVecFd)->getCheckConnection()[0]
 			&& searchfd(pollVecFd)->getCheckConnection()[1]
-			&& searchfd(pollVecFd)->getCheckConnection()[2])
+			&& searchfd(pollVecFd)->getCheckConnection()[2]) {
 		searchfd(pollVecFd)->setIsConnect();
+		welcomeMessages(pollVecFd);
+	}
 }
 
 void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
@@ -266,7 +308,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 		}
 	}
 	if (i == 11)
-		searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "421"
+		searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "421"
 				+ " " + searchfd(pollVecFd)->getNick()
 				+ " " + firstWord + " " + ":Unknown command" + "\r\n");
 }
@@ -472,7 +514,7 @@ int	Server::cmdNick(std::string buffer, int pollVecFd, int index) {
 		return (1);
 	}
 	if (searchfd(pollVecFd)->getIsConnect())
-		searchfd(pollVecFd)->sendMessage(searchfd(pollVecFd)->getNick()
+		searchfd(pollVecFd)->sendMessage(":" + searchfd(pollVecFd)->getNick()
 				+ "!" + searchfd(pollVecFd)->getUserName() + "@" +
 				searchfd(pollVecFd)->getClientIP()
 				+ " NICK :" + buffer + "\r\n");
@@ -527,20 +569,8 @@ int	Server::cmdUser(std::string buffer, int pollVecFd, int index) {
 					+ " " + ":Not enough parameters" + "\r\n");
 			return (1);
 		}
-		if (getFirstWord(buffer).compare("0") != 0) {
-			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
-					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
-					+ " " + ":Not enough parameters" + "\r\n");
-			return (1);
-		}
 		buffer = buffer.substr(getFirstWord(buffer).size() + 1, std::string::npos);
 		if (buffer.c_str()[getFirstWord(buffer).size()] == '\0') {
-			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
-					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
-					+ " " + ":Not enough parameters" + "\r\n");
-			return (1);
-		}
-		if (getFirstWord(buffer).compare("*") != 0) {
 			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " " + "461"
 					+ " " + searchfd(pollVecFd)->getNick() + " " + "USER"
 					+ " " + ":Not enough parameters" + "\r\n");
