@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/20 17:22:35 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/06/28 18:04:34 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Channel;
 class Server {
 
 	private :
- 
+
 		std::string					_datetime;
 		unsigned short				_port;
 		std::string					_password;
@@ -61,7 +61,6 @@ class Server {
 		int				cmdInvite(std::string buffer, int pollVecFd, int index);
 		int				cmdTopic(std::string buffer, int pollVecFd, int index);
 		int				cmdMode(std::string buffer, int pollVecFd, int index);
-		int				cmdQuit(std::string buffer, int pollVecFd, int index);
 		int				cmdNick(std::string buffer, int pollVecFd, int index);
 		int				cmdUser(std::string buffer, int pollVecFd, int index);
 		int				cmdPass(std::string buffer, int pollVecFd, int index);
@@ -69,7 +68,7 @@ class Server {
 		int				cmdJoin(std::string buffer, int pollVecFd, int index);
 		int				cmdPart(std::string buffer, int pollVecFd, int index);
 
-		int				needMoreParams(std::string buffer, ClientSocket* client);
+		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
 		bool			nameSyntaxChecker(char const *nick) const;
