@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/24 16:42:38 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/04 15:52:44 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,4 +206,29 @@ bool		Channel::isMember(ClientSocket* client)
 			++it;
 	}
 	return false;
+}
+
+void	Channel::setInviteOnly(bool activation)
+{
+	this->modes._i = activation;
+}
+void	Channel::setTopicRestricted(bool activation)
+{
+	this->modes._t = activation;
+}
+
+void	Channel::removePassword()
+{
+	this->_channelPass.clear();
+	this->modes._k = false;
+}
+void	Channel::setUserLimit(int limit)
+{
+	this->modes._limitValue = limit;
+	this->modes._l = true;
+}
+void	Channel::removeUserLimit()
+{
+	this->modes._limitValue = 0;
+	this->modes._l = false;
 }

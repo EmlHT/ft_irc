@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/28 22:31:39 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/04 15:31:06 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -496,7 +496,105 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	return (0);
 }
 
+bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) {
+    std::istringstream iss(modeParams);
+    char sign = '+';
+    std::string key;
+    int limit;
+
+    for (char c; iss >> c; ) {
+        if (c == '+' || c == '-') {
+            sign = c;
+        } else {
+            switch (c) {
+                case 'i':
+                    if (sign == '+')
+                        channel->setInviteOnly(true);
+                    else
+                        channel->setInviteOnly(false);
+                    break;
+                case 't':
+                    if (sign == '+')
+                        channel->setTopicRestricted(true);
+                    else
+                        channel->setTopicRestricted(false);
+                    break;
+                case 'k':
+                    if (sign == '+') {
+                        iss >> key;
+                        channel->setPassword(key);
+                    } else {
+                        channel->removePassword();
+                    }
+                    break;
+                case 'l':
+                    if (sign == '+') {
+                        iss >> limit;
+                        channel->setUserLimit(limit);
+                    } else {
+                        channel->removeUserLimit();
+                    }
+                    break;
+                default:
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
 int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
+	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("MODE")) == 461)
+		return (0);
+
+	std::string target = getFirstWord(buffer);
+	std::string modeParams = buffer.substr(buffer.find(" ") + 1);
+
+	if (target.empty())
+	{
+		std::string notEnoughParamMessage = std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " MODE :Not enough parameters\r\n";
+		searchfd(pollVecFd)->sendMessage(notEnoughParamMessage);
+		return (0);
+	}
+	if (target[0] == '#')
+	{
+		Channel* channel = findChannelName(_channelSocket, target);
+		if (!channel) {
+			std::string noSuchChanMessage = std::string(SERV_NAME) + " 403 " + target + " :No such channel\r\n";
+			searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
+			return (0);
+		}
+		if (!channel->isOperator(searchfd(pollVecFd))) {
+			std::string notChanOpMessage = std::string(SERV_NAME) + " 482 " + target + " :You're not channel operator\r\n";
+			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
+			return (0);
+		}
+		if (applyChannelModes(channel, modeParams))
+		{
+			std::string modeMessage = std::string(SERV_NAME) + " MODE " + target + " " + modeParams + "\r\n";
+			channel->broadcastMessage(modeMessage);
+		} 
+		else
+		{
+			std::string modeErrorMessage = std::string(SERV_NAME) + " 472 " + modeParams + " :is unknown mode char to me\r\n";
+			searchfd(pollVecFd)->sendMessage(modeErrorMessage);
+		}
+	} 
+	else
+	{
+		ClientSocket* user = NULL;
+		for (std::vector<ClientSocket*>::iterator it = _clientSocket.begin(); it != _clientSocket.end(); ++it) {
+			if ((*it)->getNick() == target) {
+				user = *it;
+				break;
+			}
+		}
+		if (!user) {
+			std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + target + " :No such nick/channel\r\n";
+			searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
+			return (0);
+		}
+	}
 	return (0);
 }
 

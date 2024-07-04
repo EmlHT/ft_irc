@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/28 22:31:17 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/04 02:26:59 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,16 @@ class Channel {
 		std::vector<ClientSocket*> 	getListClients() const;
 		_modes						getModes() const;
 
+
+		void						setInviteOnly(bool activation);
+		void						setUserLimit(int limit);
+		void						removeUserLimit();
+		void						setTopicRestricted(bool activation);
 		void						setTopic(std::string topic, std::string client);
 		void						setTopicSetBy(std::string &client);
 		void						setTopicSetAt();
 		void						setPassword(std::string password);
+		void						removePassword();
 		void						setOperator(ClientSocket* client);
 		void						addUser(ClientSocket* client, std::string &password);
 		void						deleteUser(ClientSocket* client);

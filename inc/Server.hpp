@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/28 18:04:34 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/04 15:33:07 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ class Server {
 		bool			nameSyntaxChecker(char const *nick) const;
 		bool			realNameSyntaxChecker(char const *nick) const;
 		bool			nickExist(std::string nick) const;
+		bool			applyChannelModes(Channel* channel, const std::string& modeParams);
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);
