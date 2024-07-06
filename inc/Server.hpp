@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/20 17:22:35 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/04 15:33:07 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Channel;
 class Server {
 
 	private :
- 
+
 		std::string					_datetime;
 		unsigned short				_port;
 		std::string					_password;
@@ -63,7 +63,6 @@ class Server {
 		int				cmdInvite(std::string buffer, int pollVecFd, int index);
 		int				cmdTopic(std::string buffer, int pollVecFd, int index);
 		int				cmdMode(std::string buffer, int pollVecFd, int index);
-		int				cmdQuit(std::string buffer, int pollVecFd, int index);
 		int				cmdNick(std::string buffer, int pollVecFd, int index);
 		int				cmdUser(std::string buffer, int pollVecFd, int index);
 		int				cmdPass(std::string buffer, int pollVecFd, int index);
@@ -71,12 +70,13 @@ class Server {
 		int				cmdJoin(std::string buffer, int pollVecFd, int index);
 		int				cmdPart(std::string buffer, int pollVecFd, int index);
 
-		int				needMoreParams(std::string buffer, ClientSocket* client);
+		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
 		bool			nameSyntaxChecker(char const *nick) const;
 		bool			realNameSyntaxChecker(char const *nick) const;
 		bool			nickExist(std::string nick) const;
+		bool			applyChannelModes(Channel* channel, const std::string& modeParams);
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);

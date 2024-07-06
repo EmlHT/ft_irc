@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/06/24 16:42:38 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/05 18:32:03 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,13 @@ void		Channel::removeOperator(ClientSocket* client)
 
 void		Channel::setOperator(ClientSocket* client)
 {
-	this->modes._listOperator.push_back(client->getNick());
+	this->modes._listOperator.push_back("@" + client->getNick());
+	std::vector<ClientSocket*>::iterator it;
+	for (it = this->_listClients.begin(); it != this->_listClients.end(); it++)
+	{
+		if ((*it)->getNick() == client->getNick())
+			(*it)->setNick("@" + client->getNick());	
+	}
 }
 
 void		Channel::broadcastMessage(std::string &message)
@@ -216,4 +222,29 @@ bool		Channel::isMember(ClientSocket* client)
 			++it;
 	}
 	return false;
+}
+
+void	Channel::setInviteOnly(bool activation)
+{
+	this->modes._i = activation;
+}
+void	Channel::setTopicRestricted(bool activation)
+{
+	this->modes._t = activation;
+}
+
+void	Channel::removePassword()
+{
+	this->_channelPass.clear();
+	this->modes._k = false;
+}
+void	Channel::setUserLimit(int limit)
+{
+	this->modes._limitValue = limit;
+	this->modes._l = true;
+}
+void	Channel::removeUserLimit()
+{
+	this->modes._limitValue = 0;
+	this->modes._l = false;
 }
