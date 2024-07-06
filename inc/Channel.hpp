@@ -23,6 +23,7 @@ class Channel {
 
 	private :
 
+		std::string	_createTime;
 		std::string _name;
 		std::vector<ClientSocket*> _listClients;
 		std::string _topic;
@@ -59,6 +60,7 @@ class Channel {
 		time_t						getTopicSetAt() const;
 		std::vector<ClientSocket*> 	getListClients() const;
 		_modes						getModes() const;
+		std::string					getCreateTime() const;
 
 		void						setTopic(std::string topic, std::string client);
 		void						setTopicSetBy(std::string &client);

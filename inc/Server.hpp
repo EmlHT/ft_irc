@@ -52,6 +52,8 @@ class Server {
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
 
+		void			clientTreats(int i);
+		bool			acceptNewClient(int i);
 		void			addInStructPollfd(int fd, short event);
 		ClientSocket	*searchfd(int fd) const;
 		void			firstConnection(char *buffer, int pollVecFd, int index);

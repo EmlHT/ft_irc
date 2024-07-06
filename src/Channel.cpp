@@ -19,6 +19,12 @@ Channel::Channel(std::string name, std::string password) : _name(name), _channel
 	modes._t = true;
 	modes._k = false;
 	modes._l = false;
+
+	time_t	now = time(0);
+	std::stringstream ss;
+	ss << now;
+	std::string timestamp = ss.str();
+	this->_createTime = timestamp;
 }
 
 Channel::~Channel()
@@ -35,6 +41,10 @@ Channel::_modes	Channel::getModes() const
 	return modes;
 }
 
+std::string	Channel::getCreateTime() const
+{
+	return _createTime;
+}
 
 std::string Channel::getPassword() const
 {
