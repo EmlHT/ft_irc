@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/08 15:54:58 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 19:41:05 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -969,20 +969,6 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 	return (0);
 }
 
-// void			Server::deleteChannel(std::string channelName)
-// {
-// 	std::vector<Channel *>::iterator it;
-// 	for (it = this->_channelSocket.begin(); it != this->_channelSocket.end(); ++it)
-// 	{
-// 		if ((*it)->getName() == channelName)
-// 		{
-// 			delete (*it);
-// 			this->_channelSocket.erase(it);
-// 			return;
-// 		}
-// 	}
-// }
-
 int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PART")) == 461)
 		return (0);
@@ -995,36 +981,31 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
         pos = coma + 1;
     }
     channelsList.push_back(channels.substr(pos));
-	
 	for (size_t i = 0; i < channelsList.size(); i++)
 	{
 		std::string channelName = channelsList[i];
 		bool channelExists = false;
 		Channel* channel;
-
         for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-			std::cout << "channelSocket name : " << (*it)->getName() << std::endl;
             if (channelName == (*it)->getName())
 			{
-				std::cout << "it name : " << (*it)->getName() << std::endl;
                 channelExists = true;
 				channel = *it;
 				std::vector<ClientSocket*> listClient = channel->getListClients();
 				for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
 				{
-					std::cout << "BOUCLE" << std::endl;
 					if (searchfd(pollVecFd) == (*itl))
 					{
-						std::cout << "IF" << std::endl;
 						if (reason == "")
 							reason = searchfd(pollVecFd)->getNick();
 						std::string partMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " PART " + channelName + " :" + reason + "\r\n";
         				channel->broadcastMessage(partMessage);
 						if (channel->deleteUser(*itl) == -1)
+						{
 							delete channel;
-						// if (!channel)
-						// 	deleteChannel(channelName);
+							_channelSocket.erase(it);
+						}
 						return (0);
 					}
 				}
