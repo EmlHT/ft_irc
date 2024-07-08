@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/08 12:10:58 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 14:17:57 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -816,14 +816,14 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PRIVMSG")) == 461)
 		return (0);
 	std::string target = getFirstWord(buffer), text = getRemainingWords(buffer, 1);
-	text = text.substr(1);
-	text += "\r\n";
 	if (text == "")
 	{
 		std::string NoTextMessage = ":" + std::string(SERV_NAME) + " 412 " + searchfd(pollVecFd)->getNick() + " PRIVMSG :No text to send" + "\r\n";
  		searchfd(pollVecFd)->sendMessage(NoTextMessage);
 		return (0);
 	}
+	text = text.substr(1);
+	text += "\r\n";
 	std::vector<std::string> targets;
 	size_t pos = 0, coma;
 	while ((coma = target.find(",", pos)) != std::string::npos) {
@@ -861,11 +861,9 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 
 int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 {
-	std::cout << "TEST 1" << std::endl;
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("JOIN")) == 461)
 		return (0);
 	std::string target = getFirstWord(buffer), pass = getSecondWord(buffer);
-	std::cout << "TEST 2" << std::endl;
 	std::vector<std::string> targets;
 	std::vector<std::string> passwords;
 
@@ -883,18 +881,15 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 	}
 	passwords.push_back(pass.substr(pos));
 
-	std::cout << "TEST 3" << std::endl;
 	if (passwords.size() < targets.size())
 		passwords.resize(targets.size());
 
-	std::cout << "TEST 4" << std::endl;
 	if (searchfd(pollVecFd)->getNbJoinChannels() >= 10)
 	{
 		std::string tooManyChannelsMessage = ":" + std::string(SERV_NAME) + " 405 " + searchfd(pollVecFd)->getNick() + " " + targets[0] + ":You have joined too many channels" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(tooManyChannelsMessage);
 		return (0);
 	}
-	std::cout << "TEST 5" << std::endl;
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
 		std::string joinMessage;
@@ -902,10 +897,8 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		std::string channelPassword = passwords[i];
 		bool channelExists = false;
 		Channel* channel;
-		std::cout << "TEST 6" << std::endl;
 		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-			std::cout << "TEST 7" << std::endl;
 			if (channelName == (*it)->getName()) 
 			{
 				channelExists = true;
@@ -916,7 +909,6 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		}
 		if (!channelExists)
 		{
-			std::cout << "TEST 8" << std::endl;
 			channel = new Channel(channelName, channelPassword);
 			channel->addUser(searchfd(pollVecFd), channelPassword);
 			if (channel->getListClients().empty())
@@ -934,11 +926,8 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
         	joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
         	channel->broadcastMessage(joinMessage);
 		}
-
-		std::cout << "TEST 10" << std::endl;
 		if (!channel->getTopic().empty())
 		{
-			std::cout << "TEST 11" << std::endl;
 			std::stringstream ss;
 			ss << channel->getTopicSetAt();
 			std::string topicSetAtStr = ss.str();
@@ -949,7 +938,6 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 			std::string topicWhoTimeMessage = ":" + std::string(SERV_NAME) + " 333 " + searchfd(pollVecFd)->getNick() + " " + channelName + " " + channel->getTopicSetBy() + " " + topicSetAtStr + "\r\n";
 			searchfd(pollVecFd)->sendMessage(topicWhoTimeMessage);
         }
-		std::cout << "TEST 12" << std::endl;
 		std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes() + "\r\n";
 		searchfd(pollVecFd)->sendMessage(modeMessage);
 
@@ -960,17 +948,14 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		}
 		searchfd(pollVecFd)->sendMessage(namesMessage + "\r\n");
 
-		std::cout << "TEST 13" << std::endl;
 		std::string endNamesMessage = ":" + std::string(SERV_NAME) + " 366 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :End of /NAMES list" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(endNamesMessage);
 
-		std::cout << "TEST 14" << std::endl;
-		for (size_t j = 0; j < clients.size(); ++j) {
-			if (clients[j] != searchfd(pollVecFd)) {
-				clients[j]->sendMessage(joinMessage);
-			}
-		}
-		std::cout << "TEST 15" << std::endl;
+		// for (size_t j = 0; j < clients.size(); ++j) {
+		// 	if (clients[j] != searchfd(pollVecFd)) {
+		// 		clients[j]->sendMessage(joinMessage);
+		// 	}
+		// }
 	}
 	return (0);
 }
