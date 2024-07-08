@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/05 18:32:03 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 15:45:49 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ void		Channel::addUser(ClientSocket* client, std::string &password)
 	client->setAddJoinChannels();
 }
 
-void		Channel::deleteUser(ClientSocket* client)
+int		Channel::deleteUser(ClientSocket* client)
 {
 	std::vector<ClientSocket*>::iterator it = this->_listClients.begin();
 	while (it != this->_listClients.end())
@@ -136,7 +136,8 @@ void		Channel::deleteUser(ClientSocket* client)
 	client->setSubJoinChannels();
 	removeOperator(client);
 	if (this->_listClients.empty())
-        delete this;
+		return (-1);
+	return (0);
 }
 
 void		Channel::removeOperator(ClientSocket* client)

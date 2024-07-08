@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/04 02:26:59 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 15:44:34 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ class Channel {
 		void						removePassword();
 		void						setOperator(ClientSocket* client);
 		void						addUser(ClientSocket* client, std::string &password);
-		void						deleteUser(ClientSocket* client);
+		int							deleteUser(ClientSocket* client);
 		void						removeOperator(ClientSocket* client);
 
 		void						broadcastMessage(std::string &message);
