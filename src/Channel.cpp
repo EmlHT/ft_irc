@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/08 19:40:16 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 20:22:41 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,13 +157,7 @@ void		Channel::removeOperator(ClientSocket* client)
 
 void		Channel::setOperator(ClientSocket* client)
 {
-	this->modes._listOperator.push_back("@" + client->getNick());
-	std::vector<ClientSocket*>::iterator it;
-	for (it = this->_listClients.begin(); it != this->_listClients.end(); it++)
-	{
-		if ((*it)->getNick() == client->getNick())
-			(*it)->setNick("@" + client->getNick());	
-	}
+	this->modes._listOperator.push_back(client->getNick());
 }
 
 void		Channel::broadcastMessage(std::string &message)

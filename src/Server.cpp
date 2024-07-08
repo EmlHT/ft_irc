@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/08 19:41:05 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 21:21:21 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -905,36 +905,32 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		std::string channelName = targets[i];
 		std::string channelPassword = passwords[i];
 		bool channelExists = false;
-		Channel* channel;
+		Channel* channel = NULL;
 		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
 			if (channelName == (*it)->getName()) 
 			{
 				channelExists = true;
 				channel = *it;
-				channel->addUser(searchfd(pollVecFd), channelPassword);
 				break;
 			}
 		}
 		if (!channelExists)
 		{
 			channel = new Channel(channelName, channelPassword);
-			channel->addUser(searchfd(pollVecFd), channelPassword);
-			if (channel->getListClients().empty())
-			{
-				delete channel;
-				return (0);
-			}
 			_channelSocket.push_back(channel);
-			joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
 			channel->setOperator(searchfd(pollVecFd));
-        	channel->broadcastMessage(joinMessage);
+			// if (channel->getListClients().empty())
+			// {
+			// 	delete channel;
+			// 	return (0);
+			// }
+			// joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
+        	// channel->broadcastMessage(joinMessage);
         }
-		else if (channelExists)
-		{
-        	joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
-        	channel->broadcastMessage(joinMessage);
-		}
+		channel->addUser(searchfd(pollVecFd), channelPassword);
+        joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
+        channel->broadcastMessage(joinMessage);
 		if (!channel->getTopic().empty())
 		{
 			std::stringstream ss;
@@ -950,21 +946,19 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes() + "\r\n";
 		searchfd(pollVecFd)->sendMessage(modeMessage);
 
-		std::string namesMessage = ":" + std::string(SERV_NAME) + " 353 " + /*searchfd(pollVecFd)->getNick()*/ "ehouot" + " @ " + channelName + " :";
+		std::string namesMessage = ":" + std::string(SERV_NAME) + " 353 " + searchfd(pollVecFd)->getNick() + " @ " + channelName + " :";
 		std::vector<ClientSocket*> clients = channel->getListClients();
-		for (size_t j = 0; j < clients.size(); ++j) {
-			namesMessage += (j == 0 ? "" : " ") + clients[j]->getNick();
+		for (size_t j = 0; j < clients.size(); ++j)
+		{
+			if (channel->isOperator(clients[j]))
+				namesMessage += (j == 0 ? std::string("") : std::string(" ")) + "@" + clients[j]->getNick();
+			else
+				namesMessage += (j == 0 ? std::string("") : std::string(" ")) + clients[j]->getNick();
 		}
 		searchfd(pollVecFd)->sendMessage(namesMessage + "\r\n");
 
 		std::string endNamesMessage = ":" + std::string(SERV_NAME) + " 366 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :End of /NAMES list" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(endNamesMessage);
-
-		// for (size_t j = 0; j < clients.size(); ++j) {
-		// 	if (clients[j] != searchfd(pollVecFd)) {
-		// 		clients[j]->sendMessage(joinMessage);
-		// 	}
-		// }
 	}
 	return (0);
 }
