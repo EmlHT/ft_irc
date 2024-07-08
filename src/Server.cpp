@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/08 14:17:57 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 14:38:49 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -339,9 +339,11 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client, std::string
 	return 0;
 }
 
-int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick) {
+int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, std::string& targetNick) {
 	for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
 	{
+		if (targetNick[0] == '@')
+			targetNick = targetNick.substr(1);
 		if ((*it)->getNick() == targetNick || (*it)->getUserName() == targetNick)
 			return (*it)->getSocketFd();
 	}
@@ -995,13 +997,12 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 						std::string partMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " PART " + channelName + " :" + reason + "\r\n";
         				channel->broadcastMessage(partMessage);
 						channel->deleteUser(*itl);
-					}
-					else
-					{
-						std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not on that channel" + "\r\n";
-        				searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+						return (0);
 					}
 				}
+				std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not on that channel" + "\r\n";
+        		searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+				return (0);
             }
 			if (!channelExists)
 			{

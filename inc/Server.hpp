@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/04 15:33:07 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 14:39:03 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ class Server {
 		bool			nickExist(std::string nick) const;
 		bool			applyChannelModes(Channel* channel, const std::string& modeParams);
 
-		int				findClientSocketFd(std::vector<ClientSocket*>& vec, const std::string& targetNick);
+		int				findClientSocketFd(std::vector<ClientSocket*>& vec, std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);
 		void			welcomeMessages(int pollVecFd) const;
 
