@@ -342,10 +342,17 @@ int	Server::needMoreParams(std::string buffer, ClientSocket* client, std::string
 int Server::findClientSocketFd(std::vector<ClientSocket*>& vec, std::string& targetNick) {
 	for (std::vector<ClientSocket*>::const_iterator it = vec.begin(); it != vec.end(); ++it)
 	{
-		if (targetNick[0] == '@')
-			targetNick = targetNick.substr(1);
-		if ((*it)->getNick() == targetNick || (*it)->getUserName() == targetNick)
+		std::string nick;
+
+		if ((*it)->getNick()[0] == '@')
+			nick = (*it)->getNick().substr(1);
+		else
+			nick = (*it)->getNick();
+		if (nick == targetNick || (*it)->getUserName() == targetNick) {
+			nick.clear();
 			return (*it)->getSocketFd();
+		}
+		nick.clear();
 	}
 	return -1;
 }
@@ -842,6 +849,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 				channel->broadcastMessage(text);
 			else
 			{
+				std::cout << "COUSCOUS" << std::endl;
 				std::string noSuchChanMessage = ":" + std::string(SERV_NAME) + " 401 " + _channelSocket.at(index)->getName() + " " + *it + " PRIVMSG :No such channel" + "\r\n";
 				searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 			}
@@ -853,6 +861,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 				send(targetFd, text.c_str(), text.size(), 0);
 			else
 			{
+				std::cout << "CAISSESCAISSE" << std::endl;
 				std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + *it + " PRIVMSG :No such nick" + "\r\n";
 				searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 			}
