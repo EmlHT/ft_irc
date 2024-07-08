@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/05 18:51:37 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/08 12:10:58 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -815,8 +815,9 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PRIVMSG")) == 461)
 		return (0);
-	std::string target = getFirstWord(buffer), text = getSecondWord(buffer);
-
+	std::string target = getFirstWord(buffer), text = getRemainingWords(buffer, 1);
+	text = text.substr(1);
+	text += "\r\n";
 	if (text == "")
 	{
 		std::string NoTextMessage = ":" + std::string(SERV_NAME) + " 412 " + searchfd(pollVecFd)->getNick() + " PRIVMSG :No text to send" + "\r\n";
@@ -830,9 +831,6 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
         pos = coma + 1;
     }
     targets.push_back(target.substr(pos));
-
-	if (text.find(":") == 0)
-		text = text.substr(1);
 	for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
 	{
 		if (!it->empty() && it->at(0) == '#')
