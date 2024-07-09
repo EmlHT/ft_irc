@@ -839,6 +839,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 		targets.push_back(target.substr(pos, coma - pos));
 		pos = coma + 1;
 	}
+	std::string	msg;
 	targets.push_back(target.substr(pos));
 	for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
 	{
@@ -846,7 +847,14 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 		{
 			Channel *channel = findChannelName(_channelSocket, *it);
 			if (channel)
-				channel->broadcastMessage(text);
+			{
+				msg = ":" + searchfd(pollVecFd)->getNick() + "!"
+					+ searchfd(pollVecFd)->getUserName() + "@"
+					+ searchfd(pollVecFd)->getClientIP() + " PRIVMSG " + *it
+					+ " " + text;
+				channel->broadcastMessage(msg);
+				msg.clear();
+			}
 			else
 			{
 				std::string noSuchChanMessage = ":" + std::string(SERV_NAME)
@@ -859,7 +867,14 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 		{
 			int targetFd = findClientSocketFd(_clientSocket, *it);
 			if (targetFd != -1)
-				send(targetFd, text.c_str(), text.size(), 0);
+			{
+				msg = ":" + searchfd(pollVecFd)->getNick() + "!"
+					+ searchfd(pollVecFd)->getUserName() + "@"
+					+ searchfd(pollVecFd)->getClientIP() + " PRIVMSG " + *it
+					+ " " + text;
+				send(targetFd, msg.c_str(), msg.size(), 0);
+				msg.clear();
+			}
 			else
 			{
 				std::string noSuchNickMessage = ":" + std::string(SERV_NAME)
