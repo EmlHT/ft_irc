@@ -79,13 +79,13 @@ void		Channel::setTopicSetAt()
 {
 	this->_topicSetAt = time(0);
 }
+
 void		Channel::setTopic(std::string topic, std::string client)
 {
 	this->_topic = topic;
 	setTopicSetBy(client);
 	setTopicSetAt();
 }
-
 
 void		Channel::setPassword(std::string password)
 {

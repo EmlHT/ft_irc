@@ -436,14 +436,17 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 	std::string userName = getFirstWord(buffer), channelName = getSecondWord(buffer);
 	if (channelName == "")
 	{
-		std::string notEnoughParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " " + " INVITE :Not enough parameters"  + "\r\n";
+		std::string notEnoughParamMessage = ":" + std::string(SERV_NAME)
+			+ " 461 " + searchfd(pollVecFd)->getNick() + " "
+			+ " INVITE :Not enough parameters" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(notEnoughParamMessage);
 		return (0);
 	}
 	Channel* channel = findChannelName(_channelSocket, channelName);
 	if (!channel)
 	{
-		std::string noSuchChanMessage = ":" + std::string(SERV_NAME) + " 403 " + channelName + " " + " :No such channel" + "\r\n";
+		std::string noSuchChanMessage = ":" + std::string(SERV_NAME) + " 403 "
+			+ channelName + " " + " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 		return (0);
 	}
@@ -458,18 +461,23 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 	}
 	if (!user)
 	{
-		std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + userName + " " + " :No such nick/channel" + "\r\n";
+		std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 "
+			+ userName + " " + " :No such nick/channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 		return (0);
 	}
 	if (channel->isMember(user))
 	{
-		std::string userInChannelMessage = ":" + std::string(SERV_NAME) + " 443 " + searchfd(pollVecFd)->getNick() + " " + userName + " " + channelName + " :is already on channel" + "\r\n";
+		std::string userInChannelMessage = ":" + std::string(SERV_NAME)
+			+ " 443 " + searchfd(pollVecFd)->getNick() + " " + userName + " "
+			+ channelName + " :is already on channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(userInChannelMessage);
 		return (0);
 	}
 	channel->getModes()._listInvited.push_back(user->getNick());
-	std::string inviteMessage = ":" + std::string(SERV_NAME) + " 341 " + searchfd(pollVecFd)->getNick() + " " + userName + " " + channelName + "\r\n";\
+	std::string inviteMessage = ":" + std::string(SERV_NAME) + " 341 "
+		+ searchfd(pollVecFd)->getNick() + " " + userName + " " + channelName
+		+ "\r\n";\
 	searchfd(pollVecFd)->sendMessage(inviteMessage);
 	return (0);
 }
@@ -496,12 +504,20 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 					if (channel->isOperator(searchfd(pollVecFd)))
 					{
 						channel->setTopic(topic, searchfd(pollVecFd)->getNick());
-						std::string topicMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " TOPIC " + channelName + " :" + topic + "\r\n";
-        				channel->broadcastMessage(topicMessage);
+						std::string topicMessage = ":"
+							+ searchfd(pollVecFd)->getNick()
+							+ "!" + searchfd(pollVecFd)->getUserName() + "@"
+							+ searchfd(pollVecFd)->getClientIP() + " TOPIC "
+							+ channelName + " :" + topic + "\r\n";
+						channel->broadcastMessage(topicMessage);
 					}
 					else
 					{
-						std::string notOperatorMessage = ":" + std::string(SERV_NAME) + " 482 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not channel operator" + "\r\n";
+						std::string notOperatorMessage = ":"
+							+ std::string(SERV_NAME) + " 482 "
+							+ searchfd(pollVecFd)->getNick() + " "
+							+ channelName + " :You're not channel operator"
+							+ "\r\n";
 						searchfd(pollVecFd)->sendMessage(notOperatorMessage);
 					}
 					break;
@@ -509,14 +525,18 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 			}
 			if (!clientIsOnChannel)
 			{
-				std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not on that channel" + "\r\n";
+				std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
+					+ " 442 " + searchfd(pollVecFd)->getNick() + " "
+					+ channelName + " :You're not on that channel" + "\r\n";
 				searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 			}
 		}
 	}
 	if (!channelExists)
 	{
-		std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :No such channel" + "\r\n";
+		std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
+			+ searchfd(pollVecFd)->getNick() + " " + channelName
+			+ " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noChannelMessage);
 	}
 	return (0);
@@ -597,8 +617,12 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 		}
 		if (applyChannelModes(channel, modeParams))
 		{
-			std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE " + target + " " + modeParams + "\r\n";
-			channel->broadcastMessage(modeMessage);
+			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
+				+ searchfd(pollVecFd)->getUserName() + "@"
+				+ searchfd(pollVecFd)->getClientIP() + " MODE " + target
+				+ " " + modeParams + "\r\n";
+			channel->broadcastMessage(msg);
+			msg.clear();
 		}
 		else
 		{
@@ -916,7 +940,9 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 
 	if (searchfd(pollVecFd)->getNbJoinChannels() >= 10)
 	{
-		std::string tooManyChannelsMessage = ":" + std::string(SERV_NAME) + " 405 " + searchfd(pollVecFd)->getNick() + " " + targets[0] + ":You have joined too many channels" + "\r\n";
+		std::string tooManyChannelsMessage = ":" + std::string(SERV_NAME)
+			+ " 405 " + searchfd(pollVecFd)->getNick() + " " + targets[0]
+			+ ":You have joined too many channels" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(tooManyChannelsMessage);
 		return (0);
 	}
@@ -929,7 +955,7 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		Channel* channel = NULL;
 		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-			if (channelName == (*it)->getName()) 
+			if (channelName == (*it)->getName())
 			{
 				channelExists = true;
 				channel = *it;
@@ -947,27 +973,40 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 			// 	return (0);
 			// }
 			// joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
-        	// channel->broadcastMessage(joinMessage);
-        }
+			// channel->broadcastMessage(joinMessage);
+		}
 		channel->addUser(searchfd(pollVecFd), channelPassword);
-        joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
-        channel->broadcastMessage(joinMessage);
+		joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!"
+			+ searchfd(pollVecFd)->getUserName() + "@"
+			+ searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName
+			+ "\r\n";
+		channel->broadcastMessage(joinMessage);
 		if (!channel->getTopic().empty())
 		{
 			std::stringstream ss;
 			ss << channel->getTopicSetAt();
 			std::string topicSetAtStr = ss.str();
 
-			std::string topicMessage = ":" + std::string(SERV_NAME) + " 332 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :" + channel->getTopic() + "\r\n";
+			std::string topicMessage = ":" + std::string(SERV_NAME) + " 332 "
+				+ searchfd(pollVecFd)->getNick() + " " + channelName + " "
+				+ channel->getTopic() + "\r\n";
 			searchfd(pollVecFd)->sendMessage(topicMessage);
 
-			std::string topicWhoTimeMessage = ":" + std::string(SERV_NAME) + " 333 " + searchfd(pollVecFd)->getNick() + " " + channelName + " " + channel->getTopicSetBy() + " " + topicSetAtStr + "\r\n";
+			std::string topicWhoTimeMessage = ":" + std::string(SERV_NAME)
+				+ " 333 " + searchfd(pollVecFd)->getNick() + " " + channelName
+				+ " " + channel->getTopicSetBy() + "!"
+				+ searchfd(pollVecFd)->getUserName() + "@"
+				+ searchfd(pollVecFd)->getClientIP() + " "
+				+ topicSetAtStr + "\r\n";
 			searchfd(pollVecFd)->sendMessage(topicWhoTimeMessage);
-        }
-		std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE " + channelName + " " + channel->activeModes() + "\r\n";
+		}
+// Le message ci-dessous ne doit apparaitre qu'à la première connexion
+		std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE "
+			+ channelName + " " + channel->activeModes() + "\r\n";
 		searchfd(pollVecFd)->sendMessage(modeMessage);
 
-		std::string namesMessage = ":" + std::string(SERV_NAME) + " 353 " + searchfd(pollVecFd)->getNick() + " @ " + channelName + " :";
+		std::string namesMessage = ":" + std::string(SERV_NAME) + " 353 "
+			+ searchfd(pollVecFd)->getNick() + " @ " + channelName + " :";
 		std::vector<ClientSocket*> clients = channel->getListClients();
 		for (size_t j = 0; j < clients.size(); ++j)
 		{
@@ -978,7 +1017,9 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 		}
 		searchfd(pollVecFd)->sendMessage(namesMessage + "\r\n");
 
-		std::string endNamesMessage = ":" + std::string(SERV_NAME) + " 366 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :End of /NAMES list" + "\r\n";
+		std::string endNamesMessage = ":" + std::string(SERV_NAME) + " 366 "
+			+ searchfd(pollVecFd)->getNick() + " " + channelName
+			+ " :End of /NAMES list" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(endNamesMessage);
 	}
 	return (0);
@@ -988,24 +1029,24 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PART")) == 461)
 		return (0);
 	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
-		
+
 	std::vector<std::string> channelsList;
 	size_t pos = 0, coma;
 	while ((coma = channels.find(",", pos)) != std::string::npos) {
-        channelsList.push_back(channels.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    channelsList.push_back(channels.substr(pos));
+		channelsList.push_back(channels.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	channelsList.push_back(channels.substr(pos));
 	for (size_t i = 0; i < channelsList.size(); i++)
 	{
 		std::string channelName = channelsList[i];
 		bool channelExists = false;
 		Channel* channel;
-        for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
+		for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
 		{
-            if (channelName == (*it)->getName())
+			if (channelName == (*it)->getName())
 			{
-                channelExists = true;
+				channelExists = true;
 				channel = *it;
 				std::vector<ClientSocket*> listClient = channel->getListClients();
 				for (std::vector<ClientSocket*>::iterator itl = listClient.begin(); itl != listClient.end(); ++itl)
@@ -1014,8 +1055,11 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 					{
 						if (reason == "")
 							reason = searchfd(pollVecFd)->getNick();
-						std::string partMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " PART " + channelName + " :" + reason + "\r\n";
-        				channel->broadcastMessage(partMessage);
+						std::string partMessage = ":" + searchfd(pollVecFd)->getNick()
+							+ "!" + searchfd(pollVecFd)->getUserName() + "@"
+							+ searchfd(pollVecFd)->getClientIP() + " PART "
+							+ channelName + " :" + reason + "\r\n";
+						channel->broadcastMessage(partMessage);
 						if (channel->deleteUser(*itl) == -1)
 						{
 							delete channel;
@@ -1024,16 +1068,20 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 						return (0);
 					}
 				}
-				std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not on that channel" + "\r\n";
-        		searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+				std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
+					+ " 442 " + searchfd(pollVecFd)->getNick() + " "
+					+ channelName + " :You're not on that channel" + "\r\n";
+				searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 				return (0);
-            }
+			}
 		}
 		if (!channelExists)
 		{
-			std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :No such channel" + "\r\n";
-        	searchfd(pollVecFd)->sendMessage(noChannelMessage);
-        }
+			std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
+				+ searchfd(pollVecFd)->getNick() + " " + channelName
+				+ " :No such channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(noChannelMessage);
+		}
 	}
 	return (0);
 }
