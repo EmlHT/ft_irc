@@ -836,10 +836,10 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 	std::vector<std::string> targets;
 	size_t pos = 0, coma;
 	while ((coma = target.find(",", pos)) != std::string::npos) {
-        targets.push_back(target.substr(pos, coma - pos));
-        pos = coma + 1;
-    }
-    targets.push_back(target.substr(pos));
+		targets.push_back(target.substr(pos, coma - pos));
+		pos = coma + 1;
+	}
+	targets.push_back(target.substr(pos));
 	for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it)
 	{
 		if (!it->empty() && it->at(0) == '#')
@@ -849,18 +849,22 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 				channel->broadcastMessage(text);
 			else
 			{
-				std::string noSuchChanMessage = ":" + std::string(SERV_NAME) + " 401 " + _channelSocket.at(index)->getName() + " " + *it + " PRIVMSG :No such channel" + "\r\n";
+				std::string noSuchChanMessage = ":" + std::string(SERV_NAME)
+					+ " 401 " + searchfd(pollVecFd)->getNick() + " " + *it
+					+ " PRIVMSG :No such channel" + "\r\n";
 				searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 			}
 		}
-		else 
+		else
 		{
 			int targetFd = findClientSocketFd(_clientSocket, *it);
 			if (targetFd != -1)
 				send(targetFd, text.c_str(), text.size(), 0);
 			else
 			{
-				std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + *it + " PRIVMSG :No such nick" + "\r\n";
+				std::string noSuchNickMessage = ":" + std::string(SERV_NAME)
+					+ " 401 " + searchfd(pollVecFd)->getNick() + " " + *it
+					+ " PRIVMSG :No such nick" + "\r\n";
 				searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 			}
 		}
