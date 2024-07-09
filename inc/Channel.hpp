@@ -77,6 +77,7 @@ class Channel {
 		int							deleteUser(ClientSocket* client);
 		void						removeOperator(ClientSocket* client);
 
+		void						broadcastPrivmessage(std::string &message, std::string nick);
 		void						broadcastMessage(std::string &message);
 		std::string					activeModes();
 		bool						isOperator(ClientSocket* client);

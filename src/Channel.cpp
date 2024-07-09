@@ -160,6 +160,15 @@ void		Channel::setOperator(ClientSocket* client)
 	this->modes._listOperator.push_back(client->getNick());
 }
 
+void		Channel::broadcastPrivmessage(std::string &message, std::string nick)
+{
+	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)
+	{
+		if (this->_listClients[i]->getNick().compare(nick) != 0)
+			this->_listClients[i]->sendMessage(message);
+	}
+}
+
 void		Channel::broadcastMessage(std::string &message)
 {
 	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)

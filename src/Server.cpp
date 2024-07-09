@@ -827,7 +827,9 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 	std::string target = getFirstWord(buffer), text = getRemainingWords(buffer, 1);
 	if (text == "")
 	{
-		std::string NoTextMessage = ":" + std::string(SERV_NAME) + " 412 " + searchfd(pollVecFd)->getNick() + " PRIVMSG :No text to send" + "\r\n";
+		std::string NoTextMessage = ":" + std::string(SERV_NAME) + " 412 "
+			+ searchfd(pollVecFd)->getNick() + " PRIVMSG :No text to send"
+			+ "\r\n";
  		searchfd(pollVecFd)->sendMessage(NoTextMessage);
 		return (0);
 	}
@@ -852,7 +854,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 					+ searchfd(pollVecFd)->getUserName() + "@"
 					+ searchfd(pollVecFd)->getClientIP() + " PRIVMSG " + *it
 					+ " " + text;
-				channel->broadcastMessage(msg);
+				channel->broadcastPrivmessage(msg, searchfd(pollVecFd)->getNick());
 				msg.clear();
 			}
 			else
