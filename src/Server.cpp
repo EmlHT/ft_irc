@@ -922,11 +922,30 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 	std::vector<std::string> passwords;
 
 	size_t pos = 0, coma;
+	std::string noChannelMessage;
 	while ((coma = target.find(",", pos)) != std::string::npos) {
-		targets.push_back(target.substr(pos, coma - pos));
+		if (target.substr(pos, coma - pos)[0] == '#')
+			targets.push_back(target.substr(pos, coma - pos));
+		else
+		{
+			noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
+				+ searchfd(pollVecFd)->getNick() + " " + target.substr(pos, coma - pos)
+				+ " :No such channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(noChannelMessage);
+			noChannelMessage.clear();
+		}
 		pos = coma + 1;
 	}
-	targets.push_back(target.substr(pos));
+	if (target.substr(pos)[0] == '#')
+		targets.push_back(target.substr(pos));
+	else
+	{
+		noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
+			+ searchfd(pollVecFd)->getNick() + " " + target.substr(pos)
+			+ " :No such channel" + "\r\n";
+		searchfd(pollVecFd)->sendMessage(noChannelMessage);
+		noChannelMessage.clear();
+	}
 
 	pos = 0;
 	while ((coma = pass.find(",", pos)) != std::string::npos) {
@@ -1000,10 +1019,13 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 				+ topicSetAtStr + "\r\n";
 			searchfd(pollVecFd)->sendMessage(topicWhoTimeMessage);
 		}
-// Le message ci-dessous ne doit apparaitre qu'à la première connexion
-		std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE "
-			+ channelName + " " + channel->activeModes() + "\r\n";
-		searchfd(pollVecFd)->sendMessage(modeMessage);
+
+		if (channel->getListClients().size() == 1)
+		{
+			std::string modeMessage = ":" + std::string(SERV_NAME) + " MODE "
+				+ channelName + " " + channel->activeModes() + "\r\n";
+			searchfd(pollVecFd)->sendMessage(modeMessage);
+		}
 
 		std::string namesMessage = ":" + std::string(SERV_NAME) + " 353 "
 			+ searchfd(pollVecFd)->getNick() + " @ " + channelName + " :";
