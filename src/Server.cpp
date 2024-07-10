@@ -857,7 +857,10 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
  		searchfd(pollVecFd)->sendMessage(NoTextMessage);
 		return (0);
 	}
-	text = text.substr(1);
+	if (text.substr(1)[0] == ':')
+		text = text.substr(1);
+	else
+		text = getFirstWord(text.substr(1));
 	text += "\r\n";
 	std::vector<std::string> targets;
 	size_t pos = 0, coma;
@@ -910,6 +913,7 @@ int	Server::cmdPrivsmg(std::string buffer, int pollVecFd, int index)
 			}
 		}
 	}
+	text.clear();
 	return (0);
 }
 
