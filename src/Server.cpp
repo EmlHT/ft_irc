@@ -306,6 +306,7 @@ void	Server::firstConnection(char *buffer, int pollVecFd, int index)
 
 void    Server::parseBuffer(char *buffer, int pollVecFd, int index)
 {
+//	std::cout << ">>>" << buffer << "<<<" << std::endl;
     std::string str(buffer);
     std::vector<std::string> buffParts;
     size_t pos = 0, endOfLine;
@@ -313,14 +314,21 @@ void    Server::parseBuffer(char *buffer, int pollVecFd, int index)
         buffParts.push_back(str.substr(pos, endOfLine - pos));
         pos = endOfLine + 2;
     }
-    buffParts.push_back(str.substr(pos) + "\r\n");
+    buffParts.push_back(str.substr(pos));
     std::cout << "BUFFER : " << str << std::endl;
 
+//	int	j;
     for (std::vector<std::string>::iterator it = buffParts.begin(); it != buffParts.end(); it++)
     {
         size_t i;
         std::string firstWord = getFirstWord(*it);
-		std::cout << "String: " << (*it) << std::endl;
+//		std::cout << "String: " << (*it) << std::endl;
+//		j = 0;
+//		while ((*it)[j])
+//		{
+//			printf("|%c|%d|\n", (*it)[j], (*it)[j]);
+//			j++;
+//		}
         std::string tokensList[10] = {"KICK", "INVITE", "TOPIC", "MODE",
             "NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART"};
         int (Server::*function_table[10])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
