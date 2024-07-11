@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 11:00:03 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/11 12:04:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,12 @@ void		Channel::setPassword(std::string password)
 	this->_channelPass = password;
 	this->_isPass = !password.empty();
 }
+
+void		Channel::setListInvited(std::string nick)
+{
+	this->modes._listInvited.push_back(nick);
+}
+
 
 std::string		Channel::addUser(ClientSocket* client, std::string &password)
 {

@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 11:44:10 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/11 12:05:33 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -474,7 +474,7 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 		searchfd(pollVecFd)->sendMessage(userInChannelMessage);
 		return (0);
 	}
-	channel->getModes()._listInvited.push_back(user->getNick());
+	channel->setListInvited(user->getNick());
 	std::string inviteMessage = ":" + std::string(SERV_NAME) + " 341 "
 		+ searchfd(pollVecFd)->getNick() + " " + userName + " " + channelName
 		+ "\r\n";
