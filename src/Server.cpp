@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 12:05:33 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/11 14:04:25 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,7 +391,7 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 	}
 	if (!channel->isOperator(searchfd(pollVecFd)))
 	{
-		std::string notOperatorMessage = ":" + std::string(SERV_NAME) + " 482 " + channelName + " :You're not channel operator" + "\r\n";
+		std::string notOperatorMessage = ":" + std::string(SERV_NAME) + " 482 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not channel operator" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(notOperatorMessage);
 		return (0);
 	}
@@ -407,7 +407,7 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 		}
 		if (!userToKick)
 		{
-			std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + users[i] + " :No such nick/channel" + "\r\n";
+			std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + users[i] + " :No such nick/channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 			continue;
 		}
@@ -446,7 +446,7 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 	if (!channel)
 	{
 		std::string noSuchChanMessage = ":" + std::string(SERV_NAME) + " 403 "
-			+ channelName + " " + " :No such channel" + "\r\n";
+			+ searchfd(pollVecFd)->getNick() + " " + channelName + " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 		return (0);
 	}
@@ -462,7 +462,7 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 	if (!user)
 	{
 		std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 "
-			+ userName + " " + " :No such nick/channel" + "\r\n";
+			+ searchfd(pollVecFd)->getNick() + " " + userName + " :No such nick/channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 		return (0);
 	}
