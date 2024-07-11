@@ -99,7 +99,7 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	{
 		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
 		{
-			std::string invRet =  std::string(SERV_NAME) + " 473 " + client->getNick() + " " + this->_name + " JOIN :Cannot join channel (+i)\r\n"; 
+			std::string invRet = ":" + std::string(SERV_NAME) + " 473 " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n"; 
 			return invRet;
 		}
 	}
@@ -107,13 +107,13 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	{
 		if (this->_channelPass != password)
 		{
-			std::string passRet = std::string(SERV_NAME) + " 475 " + client->getNick() + " " + this->_name + " JOIN :Cannot join channel (+k)\r\n";
+			std::string passRet = ":" + std::string(SERV_NAME) + " 475 " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";
 			return passRet;
 		}
 	}
 	if (this->modes._l && this->_listClients.size() >= static_cast<size_t>(this->modes._limitValue))
 	{
-		std::string listRet = std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " JOIN :Cannot join channel (+l)\r\n";
+		std::string listRet = ":" + std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
 		return listRet;
 	}
 	this->_listClients.push_back(client);
