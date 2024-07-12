@@ -1223,10 +1223,16 @@ int	Server::cmdPing(std::string buffer, int pollVecFd, int index)
 {
 	std::string	str;
 
-	if (buffer.c_str()[0] == ':')
-		str = buffer.substr(1);
+	int	i = 0;
+	while (buffer.c_str()[i] == ' ')
+		i++;
+
+	str = buffer.substr(i);
+
+	if (str.c_str()[0] == ':')
+		str = str.substr(1);
 	else
-		str = getFirstWord(buffer);
+		str = getFirstWord(str);
 
 	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME)
 			+ " " + "PONG" + " " + std::string(SERV_NAME) + " :" + str + "\r\n");
@@ -1239,10 +1245,16 @@ int	Server::cmdWho(std::string buffer, int pollVecFd, int index)
 {
 	std::string	str;
 
-	if (buffer.c_str()[0] == ':')
-		str = buffer.substr(1);
+	int	i = 0;
+	while (buffer.c_str()[i] == ' ')
+		i++;
+
+	str = buffer.substr(i);
+
+	if (str.c_str()[0] == ':')
+		str = str.substr(1);
 	else
-		str = getFirstWord(buffer);
+		str = getFirstWord(str);
 
 	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "315"
 			+ " " + searchfd(pollVecFd)->getNick()
