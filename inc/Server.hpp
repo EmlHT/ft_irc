@@ -66,9 +66,10 @@ class Server {
 		int				cmdNick(std::string buffer, int pollVecFd, int index);
 		int				cmdUser(std::string buffer, int pollVecFd, int index);
 		int				cmdPass(std::string buffer, int pollVecFd, int index);
-		int				cmdPrivsmg(std::string buffer, int pollVecFd, int index);
+		int				cmdPrivmsg(std::string buffer, int pollVecFd, int index);
 		int				cmdJoin(std::string buffer, int pollVecFd, int index);
 		int				cmdPart(std::string buffer, int pollVecFd, int index);
+		int				cmdPing(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		void			clientSocketEraser(int fd);
