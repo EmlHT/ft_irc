@@ -329,12 +329,13 @@ void    Server::parseBuffer(char *buffer, int pollVecFd, int index)
 //			printf("|%c|%d|\n", (*it)[j], (*it)[j]);
 //			j++;
 //		}
-        std::string tokensList[11] = {"KICK", "INVITE", "TOPIC", "MODE",
-            "NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART", "PING"};
-        int (Server::*function_table[11])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
+        std::string tokensList[12] = {"KICK", "INVITE", "TOPIC", "MODE",
+            "NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART", "PING", "WHO"};
+        int (Server::*function_table[12])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
             &Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
             &Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
-            &Server::cmdPrivmsg, &Server::cmdJoin, &Server::cmdPart, &Server::cmdPing};
+            &Server::cmdPrivmsg, &Server::cmdJoin, &Server::cmdPart,
+			&Server::cmdPing, &Server::cmdWho};
         for (i = 0; i < sizeof(tokensList) / sizeof(tokensList[0]); i++)
         {
             if (tokensList[i].compare(firstWord) == 0)
@@ -346,7 +347,7 @@ void    Server::parseBuffer(char *buffer, int pollVecFd, int index)
                 break ;
             }
         }
-        if (i == 11)
+        if (i == 12)
             searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "421"
                     + " " + searchfd(pollVecFd)->getNick()
                     + " " + firstWord + " " + ":Unknown command" + "\r\n");
@@ -1202,9 +1203,26 @@ int	Server::cmdPing(std::string buffer, int pollVecFd, int index)
 
 	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME)
 			+ " " + "PONG" + " " + std::string(SERV_NAME) + " :" + str + "\r\n");
+
 	str.clear();
 	return 0;
 }
 
-//int	Server::_buffer_recv_limit = 512;
-int	Server::_buffer_recv_limit = 1024;
+int	Server::cmdWho(std::string buffer, int pollVecFd, int index)
+{
+	std::string	str;
+
+	if (buffer.c_str()[0] == ':')
+		str = buffer.substr(1);
+	else
+		str = getFirstWord(buffer);
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "315"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + str + " :End of /WHO list." + "\r\n");
+
+	str.clear();
+	return 0;
+}
+
+int	Server::_buffer_recv_limit = 512;
