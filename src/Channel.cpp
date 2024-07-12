@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 12:04:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/12 14:56:26 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Channel::Channel(std::string name, std::string password) : _name(name), _channel
 {
 	modes._i = false;
 	modes._t = true;
-	modes._k = false;
+	modes._k = this->_isPass;
 	modes._l = false;
 
 	time_t	now = time(0);
@@ -111,6 +111,9 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	}
 	if (this->modes._k)
 	{
+		std::cout << "HERE" << std::endl;
+		std::cout << "MODE k : " << this->modes._k << std::endl;
+		std::cout << "channel pass : " << this->_channelPass << " PASSWORD entered : " << password << std::endl;
 		if (this->_channelPass != password)
 		{
 			std::string passRet = ":" + std::string(SERV_NAME) + " 475 " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";

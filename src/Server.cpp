@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 14:04:25 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/12 14:23:47 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -676,11 +676,17 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 			return (0);
 		}
+		if (!channel->isMember(searchfd(pollVecFd))) {	
+			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + target + " :You're not on that channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+			return (0);
+		}
 		if (!channel->isOperator(searchfd(pollVecFd))) {
 			std::string notChanOpMessage = ":" + std::string(SERV_NAME) + " 482 " + target + " :You're not channel operator\r\n";
 			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
 			return (0);
 		}
+		channel->activeModes();
 		if (applyChannelModes(channel, modeParams))
 		{
 			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
@@ -1036,14 +1042,14 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 	if (passwords.size() < targets.size())
 		passwords.resize(targets.size());
 
-	if (searchfd(pollVecFd)->getNbJoinChannels() >= 10)
-	{
-		std::string tooManyChannelsMessage = ":" + std::string(SERV_NAME)
-			+ " 405 " + searchfd(pollVecFd)->getNick() + " " + targets[0]
-			+ ":You have joined too many channels" + "\r\n";
-		searchfd(pollVecFd)->sendMessage(tooManyChannelsMessage);
-		return (0);
-	}
+	// if (searchfd(pollVecFd)->getNbJoinChannels() >= 10)
+	// {
+	// 	std::string tooManyChannelsMessage = ":" + std::string(SERV_NAME)
+	// 		+ " 405 " + searchfd(pollVecFd)->getNick() + " " + targets[0]
+	// 		+ ":You have joined too many channels" + "\r\n";
+	// 	searchfd(pollVecFd)->sendMessage(tooManyChannelsMessage);
+	// 	return (0);
+	// }
 	for (size_t i = 0; i < targets.size(); ++i)
 	{
 		std::string joinMessage;
