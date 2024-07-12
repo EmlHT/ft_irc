@@ -438,20 +438,26 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 	}
 //	std::cout << ">>>|" << user.substr(pos) << std::endl;
 	users.push_back(user.substr(pos));
-	size_t doubleP = reason.find(":");
+	size_t doubleP = reason.find(" :");
 	if (doubleP != std::string::npos && (doubleP == 0))
-		reason = reason.substr(1);
+		reason = reason.substr(2);
+	else
+		reason = getFirstWord(reason);
 
 	Channel* channel = findChannelName(_channelSocket, channelName);
 	if (!channel)
 	{
-		std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :No such channel" + "\r\n";
+		std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
+			+ searchfd(pollVecFd)->getNick() + " " + channelName
+			+ " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noChannelMessage);
 		return (0);
 	}
 	if (!channel->isOperator(searchfd(pollVecFd)))
 	{
-		std::string notOperatorMessage = ":" + std::string(SERV_NAME) + " 482 " + searchfd(pollVecFd)->getNick() + " " + channelName + " :You're not channel operator" + "\r\n";
+		std::string notOperatorMessage = ":" + std::string(SERV_NAME) + " 482 "
+			+ searchfd(pollVecFd)->getNick() + " " + channelName
+			+ " :You're not channel operator" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(notOperatorMessage);
 		return (0);
 	}
@@ -467,24 +473,34 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 		}
 		if (!userToKick)
 		{
-			std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + users[i] + " :No such nick/channel" + "\r\n";
+			std::string noSuchNickMessage = ":" + std::string(SERV_NAME)
+				+ " 401 " + searchfd(pollVecFd)->getNick() + " " + users[i]
+				+ " :No such nick/channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 			continue;
 		}
 		if (!channel->isMember(userToKick))
 		{
-			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + users[i] + " " + channelName + " :They aren't on that channel" + "\r\n";
+			std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
+				+ " 441 " + searchfd(pollVecFd)->getNick() + " " + users[i]
+				+ " " + channelName + " :They aren't on that channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 			return 1;
 		}
 		std::string kickMessage;
 		if (reason == "")
 		{
-			kickMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " KICK " + channelName + " " + users[i] + " :" + users[i] + "\r\n";
+			kickMessage = ":" + searchfd(pollVecFd)->getNick() + "!"
+				+ searchfd(pollVecFd)->getUserName() + "@"
+				+ searchfd(pollVecFd)->getClientIP() + " KICK " + channelName
+				+ " " + users[i] + " :" + users[i] + "\r\n";
 			reason = "";
 		}
 		else
-			kickMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " KICK " + channelName + " " + users[i] + " :" + reason + "\r\n";
+			kickMessage = ":" + searchfd(pollVecFd)->getNick() + "!"
+				+ searchfd(pollVecFd)->getUserName() + "@"
+				+ searchfd(pollVecFd)->getClientIP() + " KICK " + channelName
+				+ " " + users[i] + " :" + reason + "\r\n";
 		channel->broadcastMessage(kickMessage);
 		channel->deleteUser(userToKick);
 	}
