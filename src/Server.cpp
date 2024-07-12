@@ -232,6 +232,12 @@ std::string getRemainingWords(const std::string& str, int startWord)
 	}
 	std::string remaining;
 	std::getline(iss, remaining);
+
+	int	i = 0;
+	while (remaining[i] == ' ')
+		i++;
+	remaining = remaining.substr(i);
+
 	return remaining;
 }
 
@@ -424,7 +430,6 @@ Channel* Server::findChannelName(std::vector<Channel*>& vec, const std::string& 
 }
 
 int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
-//	std::cout << "|||" << buffer << std::endl;
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("KICK")) == 461)
 		return (0);
 
@@ -432,15 +437,14 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 	std::vector<std::string> users;
 	size_t pos = 0, coma;
 	while ((coma = user.find(",", pos)) != std::string::npos) {
-//		std::cout << ">|" << user.substr(pos, coma - pos) << std::endl;
 		users.push_back(user.substr(pos, coma - pos));
 		pos = coma + 1;
 	}
-//	std::cout << ">>>|" << user.substr(pos) << std::endl;
 	users.push_back(user.substr(pos));
-	size_t doubleP = reason.find(" :");
+
+	size_t doubleP = reason.find(":");
 	if (doubleP != std::string::npos && (doubleP == 0))
-		reason = reason.substr(2);
+		reason = reason.substr(1);
 	else
 		reason = getFirstWord(reason);
 
@@ -939,10 +943,11 @@ int	Server::cmdPrivmsg(std::string buffer, int pollVecFd, int index)
  		searchfd(pollVecFd)->sendMessage(NoTextMessage);
 		return (0);
 	}
-	if (text.substr(1)[0] == ':')
+
+	if (text.substr(0)[0] == ':')
 		text = text.substr(1);
 	else
-		text = getFirstWord(text.substr(1));
+		text = getFirstWord(text);
 	text += "\r\n";
 	std::vector<std::string> targets;
 	size_t pos = 0, coma;
