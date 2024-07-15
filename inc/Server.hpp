@@ -73,6 +73,7 @@ class Server {
 		int				cmdWho(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
+		void			deleteEOT();
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
 		bool			nameSyntaxChecker(char const *nick) const;

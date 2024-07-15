@@ -117,8 +117,6 @@ bool	Server::acceptNewClient(int i)
 
 void	Server::clientTreats(int i)
 {
-//	int	j = 0;
-//
 	char	*bufferContent = (char *) searchfd(this->_pollVec[i].fd)->getBuffer();
 	ssize_t bytes_received = recv(this->_pollVec[i].fd, (void *) bufferContent,
 			Server::_buffer_recv_limit - 1/*sizeof(bufferContent) - 1*/, 0);
@@ -134,7 +132,7 @@ void	Server::clientTreats(int i)
 	else
 	{
 		bufferContent[bytes_received] = '\0';
-//		std::cout << "|||" << bufferContent << "<<<" << std::endl;
+		std::cout << "|||" << bufferContent << "<<<" << std::endl;
 		if (isTerminatedByN(bufferContent) == 0)
 			this->_concatBuffer += std::string(bufferContent);
 		else if (!(std::string(bufferContent).compare("\n") == 0
@@ -147,25 +145,23 @@ void	Server::clientTreats(int i)
 			else if (isTerminatedByN(bufferContent) == 2)
 				this->_concatBuffer = this->_concatBuffer.substr(0,
 						this->_concatBuffer.size() - 1);
+			this->deleteEOT();
 			if (searchfd(this->_pollVec[i].fd)->getIsConnect() == false)
 				this->firstConnection((char *)this->_concatBuffer.c_str(),
 						this->_pollVec[i].fd, i);
 			else
-			{
-//				std::cout << ">>>>>>>>>>>>>>>>>>>>>>" << this->_concatBuffer.c_str()<< "<<<" << std::endl;
-//				std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-//				while (bufferContent[j])
-//				{
-//					printf("|>%c<|%d|\n", bufferContent[j], bufferContent[j]);
-//					j++;
-//				}
-//				std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 				parseBuffer((char *)this->_concatBuffer.c_str(),
 						this->_pollVec[i].fd, i);
-			}
 			this->_concatBuffer.clear();
 		}
 	}
+}
+
+void	Server::deleteEOT() {
+	size_t	i = 0;
+
+	while ((i = _concatBuffer.find((char)4)) != std::string::npos)
+		_concatBuffer.replace(i, 1, "");
 }
 
 void	Server::clientSocketEraser(int fd)
