@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 12:03:34 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 20:48:00 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -627,12 +627,18 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) {
 	std::istringstream iss(modeParams);
 	char sign = '+';
-	std::string key;
-	int limit;
-	bool expectKey = false;
-	bool expectLimit = false;
-	char c;
 
+	std::map<char, std::string> modeMap;
+
+	for (char c, iss >> c; )
+	{
+		if (c == '+' || c == '-')
+			sign = c;
+		else
+		{
+			
+		}
+	}
 	while (iss >> c)
 	{
 		if (c == '+' || c == '-')
