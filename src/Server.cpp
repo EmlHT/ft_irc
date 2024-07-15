@@ -1168,7 +1168,6 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PART")) == 461)
 		return (0);
-//	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
 	std::string channels = getFirstWord(buffer), reason = getRemainingWords(buffer, 1);
 
 	if (reason.substr(0)[0] == ':')
