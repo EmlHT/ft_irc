@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 09:04:10 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 11:29:35 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ void		Channel::setPassword(std::string password)
 {
 	this->_channelPass = password;
 	this->_isPass = !password.empty();
+	this->modes._k = this->_isPass;
 }
 
 void		Channel::setListInvited(std::string nick)
