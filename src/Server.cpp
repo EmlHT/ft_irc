@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 08:17:30 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 08:56:52 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -629,6 +629,7 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 }
 
 bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) {
+	std::cout << "MODE PARAM : " << modeParams << std::endl;
 	std::istringstream iss(modeParams);
 	char sign = '+';
 	std::string key;
@@ -647,9 +648,9 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) 
 					break;
 				case 't':
 					if (sign == '+')
-						channel->setTopicRestricted(true);
+						channel->setTopicRestricted(true, key);
 					else
-						channel->setTopicRestricted(false);
+						channel->setTopicRestricted(false, "");
 					break;
 				case 'k':
 					if (sign == '+') {
