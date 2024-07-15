@@ -1161,7 +1161,13 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("PART")) == 461)
 		return (0);
-	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
+//	std::string channels = getFirstWord(buffer), reason = getSecondWord(buffer);
+	std::string channels = getFirstWord(buffer), reason = getRemainingWords(buffer, 1);
+
+	if (reason.substr(0)[0] == ':')
+		reason = reason.substr(1);
+	else
+		reason = getFirstWord(reason);
 
 	std::vector<std::string> channelsList;
 	size_t pos = 0, coma;
@@ -1170,6 +1176,7 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 		pos = coma + 1;
 	}
 	channelsList.push_back(channels.substr(pos));
+	int	isPart = 0;
 	for (size_t i = 0; i < channelsList.size(); i++)
 	{
 		std::string channelName = channelsList[i];
@@ -1198,24 +1205,38 @@ int	Server::cmdPart(std::string buffer, int pollVecFd, int index) {
 							delete channel;
 							_channelSocket.erase(it);
 						}
-						return (0);
+						if (i + 1 == channelsList.size())
+						{
+							reason.clear();
+							return (0);
+						}
+						isPart = 1;
 					}
 				}
-				std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
-					+ " 442 " + searchfd(pollVecFd)->getNick() + " "
-					+ channelName + " :You're not on that channel" + "\r\n";
-				searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
-				return (0);
+				if (isPart == 0)
+				{
+					std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
+						+ " 442 " + searchfd(pollVecFd)->getNick() + " "
+						+ channelName + " :You're not on that channel" + "\r\n";
+					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+				}
+				if (i + 1 == channelsList.size())
+				{
+					reason.clear();
+					return (0);
+				}
 			}
 		}
-		if (!channelExists)
+		if (!channelExists && isPart == 0)
 		{
 			std::string noChannelMessage = ":" + std::string(SERV_NAME) + " 403 "
 				+ searchfd(pollVecFd)->getNick() + " " + channelName
 				+ " :No such channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(noChannelMessage);
 		}
+		isPart = 0;
 	}
+	reason.clear();
 	return (0);
 }
 
