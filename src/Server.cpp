@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/12 14:23:47 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 07:45:00 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1100,11 +1100,19 @@ int	Server::cmdJoin(std::string buffer, int pollVecFd, int index)
 			// joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!" + searchfd(pollVecFd)->getUserName() + "@" + searchfd(pollVecFd)->getClientIP() + " JOIN " + channelName + "\r\n";
 			// channel->broadcastMessage(joinMessage);
 		}
+		if (channel->isMember(searchfd(pollVecFd)))
+		{
+			std::string userInChannelMessage = ":" + std::string(SERV_NAME)
+				+ " 443 " + searchfd(pollVecFd)->getNick() + " "
+				+ channelName + " :is already on channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(userInChannelMessage);
+			continue;
+		}
 		std::string retAdduser = channel->addUser(searchfd(pollVecFd), channelPassword);
 		if (retAdduser != "")
 		{
 			searchfd(pollVecFd)->sendMessage(retAdduser);
-			return (0);
+			continue;
 		}
 		joinMessage = ":" + searchfd(pollVecFd)->getNick() + "!"
 			+ searchfd(pollVecFd)->getUserName() + "@"
