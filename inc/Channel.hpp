@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/11 12:03:17 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 08:34:11 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ class Channel {
 		void						setUserLimit(int limit);
 		void						setListInvited(std::string nick);
 		void						removeUserLimit();
-		void						setTopicRestricted(bool activation);
+		void						setTopicRestricted(bool activation, std::string topic);
 		void						setTopic(std::string topic, std::string client);
 		void						setTopicSetBy(std::string &client);
 		void						setTopicSetAt();
