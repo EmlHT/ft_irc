@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 08:56:52 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 12:03:34 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -629,16 +629,32 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 }
 
 bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) {
-	std::cout << "MODE PARAM : " << modeParams << std::endl;
 	std::istringstream iss(modeParams);
 	char sign = '+';
 	std::string key;
 	int limit;
+	bool expectKey = false;
+    bool expectLimit = false;
+	char c;
 
-	for (char c; iss >> c; ) {
-		if (c == '+' || c == '-') {
+	while (iss >> c)
+	{
+		if (c == '+' || c == '-') 
 			sign = c;
-		} else {
+		else if (expectKey) 
+		{
+			iss >> key;
+			channel->setPassword(key);
+			expectKey = false;
+		}
+		else if (expectLimit)
+		{
+			iss >> limit;
+			channel->setUserLimit(limit);
+			expectLimit = false;
+		}
+		else
+		{
 			switch (c) {
 				case 'i':
 					if (sign == '+')
@@ -648,25 +664,21 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) 
 					break;
 				case 't':
 					if (sign == '+')
-						channel->setTopicRestricted(true, key);
+						channel->setTopicRestricted(true);
 					else
-						channel->setTopicRestricted(false, "");
+						channel->setTopicRestricted(false);
 					break;
 				case 'k':
-					if (sign == '+') {
-						iss >> key;
-						channel->setPassword(key);
-					} else {
+					if (sign == '+')
+						expectKey = true;
+					else
 						channel->removePassword();
-					}
 					break;
 				case 'l':
-					if (sign == '+') {
-						iss >> limit;
-						channel->setUserLimit(limit);
-					} else {
+					if (sign == '+')
+						expectLimit = true;
+					else 
 						channel->removeUserLimit();
-					}
 					break;
 				default:
 					return false;

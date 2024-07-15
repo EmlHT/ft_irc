@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 11:29:35 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 11:57:00 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,9 +242,8 @@ void	Channel::setInviteOnly(bool activation)
 {
 	this->modes._i = activation;
 }
-void	Channel::setTopicRestricted(bool activation, std::string topic)
+void	Channel::setTopicRestricted(bool activation)
 {
-	this->_topic = topic;
 	this->modes._t = activation;
 }
 
