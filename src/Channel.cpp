@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/12 15:02:35 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 08:16:27 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,11 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	}
 	if (this->modes._l && this->_listClients.size() >= static_cast<size_t>(this->modes._limitValue))
 	{
-		std::string listRet = ":" + std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
-		return listRet;
+		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
+		{
+			std::string listRet = ":" + std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
+			return listRet;
+		}
 	}
 	this->_listClients.push_back(client);
 	client->setAddJoinChannels();

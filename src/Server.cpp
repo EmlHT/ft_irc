@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 07:45:00 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/15 08:17:30 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -706,7 +706,6 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
 			return (0);
 		}
-		channel->activeModes();
 		if (applyChannelModes(channel, modeParams))
 		{
 			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
