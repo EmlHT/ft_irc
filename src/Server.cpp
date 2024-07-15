@@ -630,14 +630,14 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) 
 	std::string key;
 	int limit;
 	bool expectKey = false;
-    bool expectLimit = false;
+	bool expectLimit = false;
 	char c;
 
 	while (iss >> c)
 	{
-		if (c == '+' || c == '-') 
+		if (c == '+' || c == '-')
 			sign = c;
-		else if (expectKey) 
+		else if (expectKey)
 		{
 			iss >> key;
 			channel->setPassword(key);
@@ -690,6 +690,14 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 
 	std::string target = getFirstWord(buffer);
 	std::string modeParams = buffer.substr(buffer.find(" ") + 1);
+
+	if (getFirstWord(buffer).c_str()[0] == '#' && getSecondWord(buffer).compare("b") == 0)
+	{
+		searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "368"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + target
+				+ " " + ":End of channel ban list" + "\r\n");
+		return 0;
+	}
 
 	if (target.empty())
 	{
