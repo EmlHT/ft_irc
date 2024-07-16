@@ -879,6 +879,15 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 			return (0);
 		}
+		if (getSecondWord(buffer).compare("") == 0) {
+			searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "324"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + getFirstWord(buffer)
+				+ " " + channel->activeModes() + "\r\n");
+			searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "329"
+				+ " " + searchfd(pollVecFd)->getNick() + " " + getFirstWord(buffer)
+				+ " " + channel->getCreateTime() + "\r\n");
+			return (0);
+		}
 		if (!channel->isOperator(searchfd(pollVecFd))) {
 			std::string notChanOpMessage = ":" + std::string(SERV_NAME) + " 482 " + target + " :You're not channel operator\r\n";
 			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
@@ -896,19 +905,8 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 		}
 		else
 		{
-			if (getSecondWord(buffer).compare("") == 0) {
-				searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "324"
-					+ " " + searchfd(pollVecFd)->getNick() + " " + getFirstWord(buffer)
-					+ " " + channel->activeModes() + "\r\n");
-				searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "329"
-					+ " " + searchfd(pollVecFd)->getNick() + " " + getFirstWord(buffer)
-					+ " " + channel->getCreateTime() + "\r\n");
-			}
-			else
-			{
-				std::string modeErrorMessage = ":" + std::string(SERV_NAME) + " 472 " + modeParams + " :is unknown mode char to me\r\n";
-				searchfd(pollVecFd)->sendMessage(modeErrorMessage);
-			}
+			std::string modeErrorMessage = ":" + std::string(SERV_NAME) + " 472 " + modeParams + " :is unknown mode char to me\r\n";
+			searchfd(pollVecFd)->sendMessage(modeErrorMessage);
 		}
 	}
 	else
