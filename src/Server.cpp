@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 15:34:07 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 18:59:33 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -632,6 +632,62 @@ int stringToInt(std::string value)
 	return res;
 }
 
+std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
+{
+	std::string ret;
+	std::string iMode = "";
+	std::string tMode = "";
+	std::string lMode = "";
+	std::string kMode = "";
+	std::string oMode = "";
+	char prevSign = ' ';
+	for (std::vector<std::string>::iterator it = modeVec.begin(); it != modeVec.end(); it++)
+	{
+		switch(it->at(1))
+		{
+			case 'i': {
+				if (it->at(0) == '+' && !channel->getModes()._i)
+					iMode = "+i";
+				else if (it->at(0) == '-' && channel->getModes()._i)
+					iMode = "-i";
+				break ;
+			}
+			case 't': {
+				if (it->at(0) == '+' && !channel->getModes()._t)
+					tMode = "+t";
+				else if (it->at(0) == '-' && channel->getModes()._t)
+					tMode = "-t";
+				break ;
+			}
+			case 'l': {
+				if (it->at(0) == '+' && !channel->getModes()._l)
+					lMode = "+l";
+				else if (it->at(0) == '-' && channel->getModes()._l)
+					lMode = "-l";
+				break ;
+			}
+			case 'k': {
+				if (it->at(0) == '+' && !channel->getModes()._k)
+					kMode = "+k";
+				else if (it->at(0) == '-' && channel->getModes()._k)
+					kMode = "-k";
+				break ;
+			}
+			case 'o': {
+				if (prevSign == it->at(0))
+					oMode += "o";
+				else if (it->at(0) == '+')
+					oMode += "+o";
+				else if (it->at(0) == '-')
+					oMode += "-o";
+				prevSign = it->at(0);
+				break ;
+			}
+		}
+	}
+	return ret = iMode + tMode + lMode + kMode + oMode;
+}
+
 ClientSocket*	Server::clientReturn(std::string nick) const {
 	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
 	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
@@ -643,9 +699,17 @@ ClientSocket*	Server::clientReturn(std::string nick) const {
 	return (NULL);
 }
 
-bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, int pollVecFd) {
+bool isDigit(char c) {
+	return std::isdigit(static_cast<unsigned char>(c));
+}
+
+std::string Server::applyChannelModes(Channel* channel, const std::string& modeParams, int pollVecFd) {
 	std::istringstream iss(modeParams);
 	char sign = '+';
+	std::string newOperatorList = "";
+	std::string lastValue = "";
+	std::string lastPass = "";
+	
 	std::string modesList = getFirstWord(modeParams); std::string paramModes = getRemainingWords(modeParams, 1);
 	std::vector<std::string> modeVec;
 	std::vector<std::string> paramVec;
@@ -658,7 +722,7 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 		else if (modesList[i] != 'i' && modesList[i] != 'k' && modesList[i] != 't' && modesList[i] != 'l' && modesList[i] != 'o')
 		{
 			searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " " + modesList[i] + " :is an unknown mode char to me\r\n");
-			return (false);
+			return "";
 		}
 		else
 		{
@@ -668,6 +732,7 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 		}
 		i++;
 	}
+	std::string activeModes = parseModeVec(modeVec, channel);
 	size_t pos = 0, space;
 	while ((space = paramModes.find(" ", pos)) != std::string::npos)
 	{
@@ -718,12 +783,20 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 					if (channel->getModes()._k)
 						channel->removePassword();
 				}
+				lastPass = *itP;
 				itP++;
 				break;
 			}
 			case 'l': {
 				if (sign == '+')
 				{
+					std::string param = *itP;
+					bool isValidNumber = !param.empty() && std::for_each(param.begin(), param.end(), isDigit);
+					if (!isValidNumber) {
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " l :is unknown mode char to me";
+						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+						return "";
+					}
 					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
 					{
 						itP++;
@@ -737,6 +810,7 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 					if (channel->getModes()._l)
 						channel->removeUserLimit();
 				}
+				lastValue = *itP;
 				itP++;
 				break;
 			}
@@ -746,26 +820,29 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 				{
 					std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
 					searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
-					return false;
+					return "";
 				}
 				else if (!channel->isMember(target))
 				{
 					std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
 					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
-					return false;
+					return "";
 				}
 				if (sign == '+')
 					channel->setOperator(target);
 				else
 					channel->removeOperator(target);
+				newOperatorList += target->getNick() + " ";
 				itP++;
 				break;
 			}
 			default:
-				return false;
+				return "";
 		}
 	}
-	return true;
+	if (lastValue != "" || lastPass != "" || newOperatorList != "")
+		activeModes += " " + lastValue + " " + lastPass + " " + newOperatorList; 
+	return activeModes;
 }
 
 int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
@@ -807,7 +884,8 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
 			return (0);
 		}
-		if (applyChannelModes(channel, modeParams, pollVecFd))
+		std::string activesModes = applyChannelModes(channel, modeParams, pollVecFd);
+		if (activesModes != "")
 		{
 			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
 				+ searchfd(pollVecFd)->getUserName() + "@"
