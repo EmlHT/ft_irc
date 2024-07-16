@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 14:24:56 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 14:58:30 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ void		Channel::removeOperator(ClientSocket* client)
 
 void		Channel::setOperator(ClientSocket* client)
 {
-	if (isMember(client))
+	if (!isOperator(client))
 		this->modes._listOperator.push_back(client->getNick());
 }
 

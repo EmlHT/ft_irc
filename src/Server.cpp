@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 14:45:20 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 15:14:53 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -673,91 +673,95 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 		pos = space + 1;
 	}
 	paramVec.push_back(paramModes.substr(pos));
+	std::vector<std::string>::iterator itP = paramVec.begin();
 	for (std::vector<std::string>::iterator itM = modeVec.begin(); itM != modeVec.end(); itM++)
 	{
 		char sign = itM->at(0);
-		for (std::vector<std::string>::iterator itP = paramVec.begin(); itP != paramVec.end(); itP++)
+		switch ((itM->at(1)))
 		{
-			switch ((itM->at(1))) 
-			{
-				case 'i': {
-					if (sign == '+')
-					{
-						if (!channel->getModes()._i)
-							channel->setInviteOnly(true);
-					}
-					else
-					{
-						if (channel->getModes()._i)
-							channel->setInviteOnly(false);
-					}
-					break;
+			case 'i': {
+				if (sign == '+')
+				{
+					if (!channel->getModes()._i)
+						channel->setInviteOnly(true);
 				}
-				case 't': {
-					if (sign == '+')
-					{
-						if (!channel->getModes()._t)
-							channel->setTopicRestricted(true);
-					}
-					else
-					{
-						if (channel->getModes()._t)
-							channel->setTopicRestricted(false);
-					}
-					break;
+				else
+				{
+					if (channel->getModes()._i)
+						channel->setInviteOnly(false);
 				}
-				case 'k': {
-					if (sign == '+')
-					{
-						if (!channel->getModes()._k)
-							channel->setPassword(*itP);
-					}
-					else
-					{
-						if (channel->getModes()._k)
-							channel->removePassword();
-					}
-					break;
-				}
-				case 'l': {
-					if (sign == '+')
-					{
-						if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
-							break;
-						if (!channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
-							channel->setUserLimit(stringToInt(*itP));
-					}
-					else
-					{
-						if (channel->getModes()._l)
-							channel->removeUserLimit();
-					}
-					break;
-				}
-				case 'o': {
-					ClientSocket *target = clientReturn(*itP);
-					if (target == NULL)
-					{
-						std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
-						searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
-						return false;
-					}
-					else if (!channel->isMember(target))
-					{
-						std::string notOnChannelMessage = std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
-						searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
-						return false;
-					}
-					if (sign == '+')
-						channel->setOperator(target);
-					else
-						channel->removeOperator(target);
-					break;
-				}
-				default:
-					return false;
+				break;
 			}
-		}
+			case 't': {
+				if (sign == '+')
+				{
+					if (!channel->getModes()._t)
+						channel->setTopicRestricted(true);
+				}
+				else
+				{
+					if (channel->getModes()._t)
+						channel->setTopicRestricted(false);
+				}
+				break;
+			}
+			case 'k': {
+				if (sign == '+')
+				{
+					if (!channel->getModes()._k)
+						channel->setPassword(*itP);
+				}
+				else
+				{
+					if (channel->getModes()._k)
+						channel->removePassword();
+				}
+				itP++;
+				break;
+			}
+			case 'l': {
+				if (sign == '+')
+				{
+					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
+					{
+						itP++;
+						break;
+					}
+					if (!channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
+						channel->setUserLimit(stringToInt(*itP));
+				}
+				else
+				{
+					if (channel->getModes()._l)
+						channel->removeUserLimit();
+				}
+				itP++;
+				break;
+			}
+			case 'o': {
+				ClientSocket *target = clientReturn(*itP);
+				if (target == NULL)
+				{
+					std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
+					searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
+					return false;
+				}
+				else if (!channel->isMember(target))
+				{
+					std::string notOnChannelMessage = std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
+					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+					return false;
+				}
+				if (sign == '+')
+					channel->setOperator(target);
+				else
+					channel->removeOperator(target);
+				itP++;
+				break;
+			}
+			default:
+				return false;
+		}	
 	}
 	return true;
 }
