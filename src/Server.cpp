@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 18:59:33 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/17 00:26:36 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -634,12 +634,9 @@ int stringToInt(std::string value)
 
 std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 {
-	std::string ret;
-	std::string iMode = "";
-	std::string tMode = "";
-	std::string lMode = "";
-	std::string kMode = "";
-	std::string oMode = "";
+	std::string ret, iMode = "", tMode = "", lMode = "", kMode = "", oMode = "";
+	bool iStartValue = channel->getModes()._i, tStartValue = channel->getModes()._t, lStartValue = channel->getModes()._l, kStartValue = channel->getModes()._k;
+	
 	char prevSign = ' ';
 	for (std::vector<std::string>::iterator it = modeVec.begin(); it != modeVec.end(); it++)
 	{
@@ -647,30 +644,54 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 		{
 			case 'i': {
 				if (it->at(0) == '+' && !channel->getModes()._i)
+				{
 					iMode = "+i";
+					channel->setModes('i', true);
+				}
 				else if (it->at(0) == '-' && channel->getModes()._i)
+				{
 					iMode = "-i";
+					channel->setModes('i', false);
+				}
 				break ;
 			}
 			case 't': {
 				if (it->at(0) == '+' && !channel->getModes()._t)
+				{
 					tMode = "+t";
+					channel->setModes('t', true);
+				}
 				else if (it->at(0) == '-' && channel->getModes()._t)
+				{
 					tMode = "-t";
+					channel->setModes('t', false);
+				}
 				break ;
 			}
 			case 'l': {
 				if (it->at(0) == '+' && !channel->getModes()._l)
+				{
 					lMode = "+l";
+					channel->setModes('l', true);	
+				}
 				else if (it->at(0) == '-' && channel->getModes()._l)
+				{
 					lMode = "-l";
+					channel->setModes('l', false);
+				}
 				break ;
 			}
 			case 'k': {
 				if (it->at(0) == '+' && !channel->getModes()._k)
+				{
 					kMode = "+k";
+					channel->setModes('k', true);
+				}
 				else if (it->at(0) == '-' && channel->getModes()._k)
+				{
 					kMode = "-k";
+					channel->setModes('k', false);
+				}
 				break ;
 			}
 			case 'o': {
@@ -685,6 +706,14 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 			}
 		}
 	}
+	if (iStartValue == channel->getModes()._i)
+		iMode = "";
+	if (tStartValue == channel->getModes()._t)
+		tMode = "";
+	if (lStartValue == channel->getModes()._l)
+		lMode = "";
+	if (kStartValue == channel->getModes()._k)
+		kMode = "";
 	return ret = iMode + tMode + lMode + kMode + oMode;
 }
 
@@ -775,6 +804,13 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 			case 'k': {
 				if (sign == '+')
 				{
+					std::string param = *itP;
+					bool isValidParam = !param.empty();
+					if (!isValidParam) {
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " k :Not enough parameters\r\n";
+						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+						return "";
+					}
 					if (!channel->getModes()._k)
 						channel->setPassword(*itP);
 				}
@@ -791,7 +827,19 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				if (sign == '+')
 				{
 					std::string param = *itP;
-					bool isValidNumber = !param.empty() && std::for_each(param.begin(), param.end(), isDigit);
+					bool isEmptyNumber = !param.empty();
+					if (!isEmptyNumber) {
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " l :Not enough parameters\r\n";
+						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+						return "";
+					}
+					bool isValidNumber = true;
+					for (std::string::const_iterator it = param.begin(); it != param.end(); ++it) {
+						if (!std::isdigit(*it)) {
+							isValidNumber = false;
+							break;
+						}
+					}
 					if (!isValidNumber) {
 						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " l :is unknown mode char to me";
 						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
@@ -815,6 +863,13 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				break;
 			}
 			case 'o': {
+				std::string param = *itP;
+				bool isEmptyNumber = !param.empty();
+				if (!isEmptyNumber) {
+					std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " o :Not enough parameters\r\n";
+					searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+					return "";
+				}
 				ClientSocket *target = clientReturn(*itP);
 				if (target == NULL)
 				{
@@ -899,15 +954,15 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
 				+ searchfd(pollVecFd)->getUserName() + "@"
 				+ searchfd(pollVecFd)->getClientIP() + " MODE " + target
-				+ " " + modeParams + "\r\n";
+				+ " " + activesModes + "\r\n";
 			channel->broadcastMessage(msg);
 			msg.clear();
 		}
-		else
-		{
-			std::string modeErrorMessage = ":" + std::string(SERV_NAME) + " 472 " + modeParams + " :is unknown mode char to me\r\n";
-			searchfd(pollVecFd)->sendMessage(modeErrorMessage);
-		}
+		// else
+		// {
+		// 	std::string modeErrorMessage = ":" + std::string(SERV_NAME) + " 472 " + modeParams + " :is unknown mode char to me\r\n";
+		// 	searchfd(pollVecFd)->sendMessage(modeErrorMessage);
+		// }
 	}
 	else
 	{
