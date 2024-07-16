@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 11:57:00 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 14:24:56 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,8 @@ void		Channel::removeOperator(ClientSocket* client)
 
 void		Channel::setOperator(ClientSocket* client)
 {
-	this->modes._listOperator.push_back(client->getNick());
+	if (isMember(client))
+		this->modes._listOperator.push_back(client->getNick());
 }
 
 void		Channel::broadcastPrivmessage(std::string &message, std::string nick)

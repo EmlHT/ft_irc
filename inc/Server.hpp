@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 20:19:09 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 14:14:21 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,13 @@ class Server {
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		void			deleteEOT();
+		ClientSocket*	clientReturn(std::string nick) const;
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
 		bool			nameSyntaxChecker(char const *nick) const;
 		bool			realNameSyntaxChecker(char const *nick) const;
 		bool			nickExist(std::string nick) const;
-		bool			applyChannelModes(Channel* channel, const std::string& modeParams);
+		bool			applyChannelModes(Channel* channel, const std::string& modeParams, int pollVecFd);
 		// void			deleteChannel(std::string channelName);
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, std::string& targetNick);

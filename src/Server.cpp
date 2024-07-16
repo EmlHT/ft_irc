@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/15 20:48:00 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 14:29:23 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -624,40 +624,62 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	return (0);
 }
 
-bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) {
+int stringToInt(std::string value)
+{
+	std::istringstream iss(value);
+	int res;
+	iss >> res;
+	return res;
+}
+
+ClientSocket*	Server::clientReturn(std::string nick) const {
+	std::vector<ClientSocket*>::const_iterator it = _clientSocket.begin();
+	std::vector<ClientSocket*>::const_iterator ite = _clientSocket.end();
+	for (it = _clientSocket.begin(); it != ite; it++)
+	{
+		if (nick.compare((*it)->getNick()) == 0 )
+			return (*it);
+	}
+	return (NULL);
+}
+
+bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, int pollVecFd) {
 	std::istringstream iss(modeParams);
 	char sign = '+';
+	std::string modesList = getFirstWord(modeParams); std::string paramModes = getRemainingWords(modeParams, 1);
+	std::vector<std::string> modeVec;
+	std::vector<std::string> paramVec;
 
-	std::map<char, std::string> modeMap;
-
-	for (char c, iss >> c; )
+	int i = 0;
+	while (modesList[i])
 	{
-		if (c == '+' || c == '-')
-			sign = c;
-		else
+		if (modesList[i] == '+' || modesList[i] == '-')
+			sign = modesList[i];
+		else if (modesList[i] != ' ')
 		{
-			
+			if (modesList[i] != 'i' || modesList[i] != 'k' || modesList[i] != 't' || modesList[i] != 'l' || modesList[i] != 'o')
+			{
+				return (false);
+			}
+			std::string signAndMode = std::string(&sign) + std::string(&modesList[i]);
+			modeVec.push_back(signAndMode);
 		}
+		i++;
 	}
-	while (iss >> c)
+	size_t pos = 0, space;
+	while ((space = paramModes.find(" ", pos)) != std::string::npos)
 	{
-		if (c == '+' || c == '-')
-			sign = c;
-		else if (expectKey)
+		paramVec.push_back(paramModes.substr(pos, space - pos));
+		pos = space + 1;
+	}
+	paramVec.push_back(paramModes.substr(pos));
+	for (std::vector<std::string>::iterator itM = modeVec.begin(); itM != modeVec.end(); itM++)
+	{
+		char sign = itM->at(0);
+		for (std::vector<std::string>::iterator itP = paramVec.begin(); itP != paramVec.end(); itP++)
 		{
-			iss >> key;
-			channel->setPassword(key);
-			expectKey = false;
-		}
-		else if (expectLimit)
-		{
-			iss >> limit;
-			channel->setUserLimit(limit);
-			expectLimit = false;
-		}
-		else
-		{
-			switch (c) {
+			switch ((itM->at(1))) 
+			{
 				case 'i':
 					if (sign == '+')
 						channel->setInviteOnly(true);
@@ -672,16 +694,39 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams) 
 					break;
 				case 'k':
 					if (sign == '+')
-						expectKey = true;
+						channel->setPassword(*itP);
 					else
 						channel->removePassword();
 					break;
-				case 'l':
+				case 'l': {
+					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
+						break;
 					if (sign == '+')
-						expectLimit = true;
+						channel->setUserLimit(stringToInt(*itP));
 					else 
 						channel->removeUserLimit();
 					break;
+				}
+				case 'o': {
+					ClientSocket *target = clientReturn(*itP);
+					if (target == NULL)
+					{
+						std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
+						searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
+						return false;
+					}
+					else if (!channel->isMember(target))
+					{
+						std::string notOnChannelMessage = std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
+						searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+						return false;
+					}
+					if (sign == '+')
+						channel->setOperator(target);
+					else
+						channel->removeOperator(target);
+					break;
+				}
 				default:
 					return false;
 			}
@@ -729,7 +774,7 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
 			return (0);
 		}
-		if (applyChannelModes(channel, modeParams))
+		if (applyChannelModes(channel, modeParams, pollVecFd))
 		{
 			std::string	msg = ":" + searchfd(pollVecFd)->getNick() + "!"
 				+ searchfd(pollVecFd)->getUserName() + "@"
