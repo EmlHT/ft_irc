@@ -655,14 +655,15 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 	{
 		if (modesList[i] == '+' || modesList[i] == '-')
 			sign = modesList[i];
-		else if (modesList[i] != 'i' || modesList[i] != 'k' || modesList[i] != 't' || modesList[i] != 'l' || modesList[i] != 'o')
+		else if (modesList[i] != 'i' && modesList[i] != 'k' && modesList[i] != 't' && modesList[i] != 'l' && modesList[i] != 'o')
 		{
-			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " " + modesList[i] + " :is an unknown mode char to me\r\n");
+			searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " " + modesList[i] + " :is an unknown mode char to me\r\n");
 			return (false);
 		}
 		else
 		{
-			std::string signAndMode = std::string(&sign) + std::string(&modesList[i]);
+			std::string	signAndMode(1, sign);
+			signAndMode += modesList[i];
 			modeVec.push_back(signAndMode);
 		}
 		i++;
@@ -743,13 +744,13 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 				ClientSocket *target = clientReturn(*itP);
 				if (target == NULL)
 				{
-					std::string noSuchNickMessage = std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
+					std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
 					searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 					return false;
 				}
 				else if (!channel->isMember(target))
 				{
-					std::string notOnChannelMessage = std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
+					std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
 					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 					return false;
 				}
@@ -762,7 +763,7 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 			}
 			default:
 				return false;
-		}	
+		}
 	}
 	return true;
 }
@@ -842,7 +843,7 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			}
 		}
 		if (!user) {
-			std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + target + " :No such nick/channel\r\n";
+			std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + target + " :No such nick/channel\r\n";
 			searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 			return (0);
 		}
