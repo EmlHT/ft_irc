@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 15:27:55 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 15:34:07 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -656,7 +656,10 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 		if (modesList[i] == '+' || modesList[i] == '-')
 			sign = modesList[i];
 		else if (modesList[i] != 'i' || modesList[i] != 'k' || modesList[i] != 't' || modesList[i] != 'l' || modesList[i] != 'o')
+		{
+			searchfd(pollVecFd)->sendMessage(std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " " + modesList[i] + " :is an unknown mode char to me\r\n");
 			return (false);
+		}
 		else
 		{
 			std::string signAndMode = std::string(&sign) + std::string(&modesList[i]);
