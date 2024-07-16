@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 14:29:23 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 14:45:20 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -680,31 +680,58 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 		{
 			switch ((itM->at(1))) 
 			{
-				case 'i':
+				case 'i': {
 					if (sign == '+')
-						channel->setInviteOnly(true);
+					{
+						if (!channel->getModes()._i)
+							channel->setInviteOnly(true);
+					}
 					else
-						channel->setInviteOnly(false);
+					{
+						if (channel->getModes()._i)
+							channel->setInviteOnly(false);
+					}
 					break;
-				case 't':
+				}
+				case 't': {
 					if (sign == '+')
-						channel->setTopicRestricted(true);
+					{
+						if (!channel->getModes()._t)
+							channel->setTopicRestricted(true);
+					}
 					else
-						channel->setTopicRestricted(false);
+					{
+						if (channel->getModes()._t)
+							channel->setTopicRestricted(false);
+					}
 					break;
-				case 'k':
+				}
+				case 'k': {
 					if (sign == '+')
-						channel->setPassword(*itP);
+					{
+						if (!channel->getModes()._k)
+							channel->setPassword(*itP);
+					}
 					else
-						channel->removePassword();
+					{
+						if (channel->getModes()._k)
+							channel->removePassword();
+					}
 					break;
+				}
 				case 'l': {
-					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
-						break;
 					if (sign == '+')
-						channel->setUserLimit(stringToInt(*itP));
-					else 
-						channel->removeUserLimit();
+					{
+						if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
+							break;
+						if (!channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
+							channel->setUserLimit(stringToInt(*itP));
+					}
+					else
+					{
+						if (channel->getModes()._l)
+							channel->removeUserLimit();
+					}
 					break;
 				}
 				case 'o': {
