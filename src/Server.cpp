@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 15:14:53 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/16 15:27:55 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -655,12 +655,10 @@ bool Server::applyChannelModes(Channel* channel, const std::string& modeParams, 
 	{
 		if (modesList[i] == '+' || modesList[i] == '-')
 			sign = modesList[i];
-		else if (modesList[i] != ' ')
+		else if (modesList[i] != 'i' || modesList[i] != 'k' || modesList[i] != 't' || modesList[i] != 'l' || modesList[i] != 'o')
+			return (false);
+		else
 		{
-			if (modesList[i] != 'i' || modesList[i] != 'k' || modesList[i] != 't' || modesList[i] != 'l' || modesList[i] != 'o')
-			{
-				return (false);
-			}
 			std::string signAndMode = std::string(&sign) + std::string(&modesList[i]);
 			modeVec.push_back(signAndMode);
 		}
