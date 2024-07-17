@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/17 00:26:36 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/17 15:26:15 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -837,13 +837,14 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 					for (std::string::const_iterator it = param.begin(); it != param.end(); ++it) {
 						if (!std::isdigit(*it)) {
 							isValidNumber = false;
+							itP++;
 							break;
 						}
 					}
 					if (!isValidNumber) {
 						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " l :is unknown mode char to me\r\n";
 						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
-						return "";
+						break;
 					}
 					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
 					{
@@ -875,13 +876,13 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				{
 					std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel\r\n";
 					searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
-					return "";
+					break;
 				}
 				else if (!channel->isMember(target))
 				{
 					std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel\r\n";
 					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
-					return "";
+					break;
 				}
 				if (sign == '+')
 					channel->setOperator(target);
@@ -918,7 +919,6 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 				+ " " + ":End of channel ban list" + "\r\n");
 		return 0;
 	}
-
 	if (target.empty())
 	{
 		std::string notEnoughParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " MODE :Not enough parameters\r\n";
