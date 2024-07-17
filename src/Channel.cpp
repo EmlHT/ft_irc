@@ -101,14 +101,6 @@ void		Channel::setListInvited(std::string nick)
 
 std::string		Channel::addUser(ClientSocket* client, std::string &password)
 {
-	if (this->modes._i)
-	{
-		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
-		{
-			std::string invRet = ":" + std::string(SERV_NAME) + " 473 " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n"; 
-			return invRet;
-		}
-	}
 	if (this->modes._k)
 	{
 		if (this->_channelPass != password)
@@ -123,6 +115,14 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 		{
 			std::string listRet = ":" + std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
 			return listRet;
+		}
+	}
+	if (this->modes._i)
+	{
+		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
+		{
+			std::string invRet = ":" + std::string(SERV_NAME) + " 473 " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n"; 
+			return invRet;
 		}
 	}
 	this->_listClients.push_back(client);

@@ -811,12 +811,12 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
 						return "";
 					}
-					if (!channel->getModes()._k)
+					if (channel->getModes()._k)
 						channel->setPassword(*itP);
 				}
 				else
 				{
-					if (channel->getModes()._k)
+					if (!channel->getModes()._k)
 						channel->removePassword();
 				}
 				lastPass = *itP;
@@ -851,12 +851,12 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						itP++;
 						break;
 					}
-					if (!channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
+					if (channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
 						channel->setUserLimit(stringToInt(*itP));
 				}
 				else
 				{
-					if (channel->getModes()._l)
+					if (!channel->getModes()._l)
 						channel->removeUserLimit();
 				}
 				lastValue = *itP;
