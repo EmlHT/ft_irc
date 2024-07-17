@@ -636,7 +636,7 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 {
 	std::string ret, iMode = "", tMode = "", lMode = "", kMode = "", oMode = "";
 	bool iStartValue = channel->getModes()._i, tStartValue = channel->getModes()._t, lStartValue = channel->getModes()._l, kStartValue = channel->getModes()._k;
-	
+
 	char prevSign = ' ';
 	for (std::vector<std::string>::iterator it = modeVec.begin(); it != modeVec.end(); it++)
 	{
@@ -672,7 +672,7 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 				if (it->at(0) == '+' && !channel->getModes()._l)
 				{
 					lMode = "+l";
-					channel->setModes('l', true);	
+					channel->setModes('l', true);
 				}
 				else if (it->at(0) == '-' && channel->getModes()._l)
 				{
@@ -714,7 +714,7 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 		lMode = "";
 	if (kStartValue == channel->getModes()._k)
 		kMode = "";
-	return ret = iMode + tMode + lMode + kMode + oMode;
+	return ret = iMode + kMode + lMode + oMode + tMode;
 }
 
 ClientSocket*	Server::clientReturn(std::string nick) const {
