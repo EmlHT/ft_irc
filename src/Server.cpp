@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/17 17:42:05 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/17 17:51:28 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -635,8 +635,8 @@ int stringToInt(std::string value)
 std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 {
 	std::string ret, iMode = "", tMode = "", lMode = "", kMode = "", oMode = "";
-	bool iStartValue = channel->getModes()._i, tStartValue = channel->getModes()._t, /*lStartValue = channel->getModes()._l,*/ kStartValue = channel->getModes()._k;
-	
+	bool iStartValue = channel->getModes()._i, tStartValue = channel->getModes()._t, lStartValue = channel->getModes()._l, kStartValue = channel->getModes()._k;
+
 	char prevSign = ' ';
 	bool isList = false;
 	for (std::vector<std::string>::iterator it = modeVec.begin(); it != modeVec.end(); it++)
@@ -712,7 +712,7 @@ std::string	parseModeVec(std::vector<std::string> modeVec, Channel* channel)
 		iMode = "";
 	if (tStartValue == channel->getModes()._t)
 		tMode = "";
-	if (isList == false)
+	if (isList == false || lStartValue == channel->getModes()._l)
 		lMode = "";
 	if (kStartValue == channel->getModes()._k)
 		kMode = "";
