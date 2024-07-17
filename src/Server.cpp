@@ -738,7 +738,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 	std::string newOperatorList = "";
 	std::string lastValue = "";
 	std::string lastPass = "";
-	
+
 	std::string modesList = getFirstWord(modeParams); std::string paramModes = getRemainingWords(modeParams, 1);
 	std::vector<std::string> modeVec;
 	std::vector<std::string> paramVec;
@@ -841,7 +841,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						}
 					}
 					if (!isValidNumber) {
-						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " l :is unknown mode char to me";
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 472 " + searchfd(pollVecFd)->getNick() + " l :is unknown mode char to me\r\n";
 						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
 						return "";
 					}
@@ -873,13 +873,13 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				ClientSocket *target = clientReturn(*itP);
 				if (target == NULL)
 				{
-					std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel";
+					std::string noSuchNickMessage = ":" + std::string(SERV_NAME) + " 401 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " :No such nick/channel\r\n";
 					searchfd(pollVecFd)->sendMessage(noSuchNickMessage);
 					return "";
 				}
 				else if (!channel->isMember(target))
 				{
-					std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel";
+					std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 441 " + searchfd(pollVecFd)->getNick() + " " + (*itP) + " " + channel->getName() + " :They aren't on that channel\r\n";
 					searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 					return "";
 				}
@@ -895,8 +895,12 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				return "";
 		}
 	}
-	if (lastValue != "" || lastPass != "" || newOperatorList != "")
-		activeModes += " " + lastValue + " " + lastPass + " " + newOperatorList; 
+	if (lastValue != "")
+		activeModes += " " + lastValue;
+	if (lastPass != "")
+		activeModes += " " + lastPass;
+	if (newOperatorList != "")
+		activeModes += " " + newOperatorList;
 	return activeModes;
 }
 
@@ -929,7 +933,7 @@ int	Server::cmdMode(std::string buffer, int pollVecFd, int index) {
 			searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 			return (0);
 		}
-		if (!channel->isMember(searchfd(pollVecFd))) {	
+		if (!channel->isMember(searchfd(pollVecFd))) {
 			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + target + " :You're not on that channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 			return (0);
