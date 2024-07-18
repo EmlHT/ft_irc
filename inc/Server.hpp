@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 17:08:52 by mcordes          ###   ########.fr       */
+/*   Updated: 2024/07/18 17:29:52 by mcordes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ class Server {
 		int				cmdPart(std::string buffer, int pollVecFd, int index);
 		int				cmdPing(std::string buffer, int pollVecFd, int index);
 		int				cmdWho(std::string buffer, int pollVecFd, int index);
+		int				cmdWhois(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		ClientSocket*	clientReturn(std::string nick) const;
