@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 11:45:57 by mcordes          ###   ########.fr       */
+/*   Updated: 2024/07/18 14:33:14 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -567,7 +567,7 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 	if (needMoreParams(buffer, searchfd(pollVecFd), std::string("TOPIC")) == 461)
 		return (0);
-	std::string channelName = getFirstWord(buffer), topic = getSecondWord(buffer);
+	std::string channelName = getFirstWord(buffer), topic = getRemainingWords(buffer, 1);
 	bool channelExists = false;
 	Channel* channel;
 	for (std::vector<Channel*>::iterator it = _channelSocket.begin(); it != _channelSocket.end(); ++it)
