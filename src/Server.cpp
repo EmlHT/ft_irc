@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 11:45:57 by mcordes          ###   ########.fr       */
+/*   Updated: 2024/07/18 17:15:45 by mcordes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ void	Server::clientTreats(int i)
 	else
 	{
 		bufferContent[bytes_received] = '\0';
-		std::cout << "|||" << bufferContent << "<<<" << std::endl;
 		if (isTerminatedByN(bufferContent) == 0)
 			this->_concatBuffer += std::string(bufferContent);
 		else if (!(std::string(bufferContent).compare("\n") == 0
@@ -145,7 +144,6 @@ void	Server::clientTreats(int i)
 			else if (isTerminatedByN(bufferContent) == 2)
 				this->_concatBuffer = this->_concatBuffer.substr(0,
 						this->_concatBuffer.size() - 1);
-			this->deleteEOT();
 			if (searchfd(this->_pollVec[i].fd)->getIsConnect() == false)
 				this->firstConnection((char *)this->_concatBuffer.c_str(),
 						this->_pollVec[i].fd, i);
@@ -155,13 +153,6 @@ void	Server::clientTreats(int i)
 			this->_concatBuffer.clear();
 		}
 	}
-}
-
-void	Server::deleteEOT() {
-	size_t	i = 0;
-
-	while ((i = _concatBuffer.find((char)4)) != std::string::npos)
-		_concatBuffer.replace(i, 1, "");
 }
 
 void	Server::clientSocketEraser(int fd)

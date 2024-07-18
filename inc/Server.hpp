@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 18:56:59 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 17:08:52 by mcordes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ class Server {
 		int				cmdWho(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
-		void			deleteEOT();
 		ClientSocket*	clientReturn(std::string nick) const;
 		void			clientSocketEraser(int fd);
 		size_t			isTerminatedByN(char *buffer) const;
