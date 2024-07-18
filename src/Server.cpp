@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 14:33:14 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 17:27:38 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -331,13 +331,13 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 //			printf("|%c|%d|\n", (*it)[j], (*it)[j]);
 //			j++;
 //		}
-		std::string tokensList[12] = {"KICK", "INVITE", "TOPIC", "MODE",
-			"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART", "PING", "WHO"};
-		int (Server::*function_table[12])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
+		std::string tokensList[13] = {"KICK", "INVITE", "TOPIC", "MODE",
+			"NICK", "USER", "PASS", "PRIVMSG", "JOIN", "PART", "PING", "WHO", "WHOIS"};
+		int (Server::*function_table[13])(std::string buffer, int pollVecFd, int index) = {&Server::cmdKick,
 			&Server::cmdInvite, &Server::cmdTopic, &Server::cmdMode,
 			&Server::cmdNick, &Server::cmdUser, &Server::cmdPass,
 			&Server::cmdPrivmsg, &Server::cmdJoin, &Server::cmdPart,
-			&Server::cmdPing, &Server::cmdWho};
+			&Server::cmdPing, &Server::cmdWho, &Server::cmdWhois};
 		for (i = 0; i < sizeof(tokensList) / sizeof(tokensList[0]); i++)
 		{
 			if (tokensList[i].compare(firstWord) == 0)
@@ -349,7 +349,7 @@ void	Server::parseBuffer(char *buffer, int pollVecFd, int index)
 				break ;
 			}
 		}
-		if (i == 12)
+		if (i == 13)
 			searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "421"
 				+ " " + searchfd(pollVecFd)->getNick()
 				+ " " + firstWord + " " + ":Unknown command" + "\r\n");
@@ -526,6 +526,16 @@ int	Server::cmdInvite(std::string buffer, int pollVecFd, int index) {
 			+ searchfd(pollVecFd)->getNick() + " " + channelName + " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noSuchChanMessage);
 		return (0);
+	}
+	if (!channel->isMember(searchfd(pollVecFd))) {
+			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName +  " :You're not on that channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+			return (0);
+	}
+	if (!channel->isOperator(searchfd(pollVecFd))) {
+			std::string notChanOpMessage = ":" + std::string(SERV_NAME) + " 482 " + channelName + " :You're not channel operator\r\n";
+			searchfd(pollVecFd)->sendMessage(notChanOpMessage);
+			return (0);
 	}
 	ClientSocket* user = NULL;
 	for (std::vector<ClientSocket*>::iterator it = _clientSocket.begin(); it != _clientSocket.end(); ++it)
@@ -791,6 +801,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 	}
 	paramVec.push_back(paramModes.substr(pos));
 	std::vector<std::string>::iterator itP = paramVec.begin();
+	size_t j = 0;
 	for (std::vector<std::string>::iterator itM = modeVec.begin(); itM != modeVec.end(); itM++)
 	{
 		char sign = itM->at(0);
@@ -825,6 +836,11 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 			case 'k': {
 				if (sign == '+')
 				{
+					if (j >= paramVec.size()) {
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " k :Not enough parameters\r\n";
+						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+						return "";
+					}
 					std::string param = *itP;
 					bool isValidParam = !param.empty();
 					if (!isValidParam) {
@@ -841,12 +857,18 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						channel->removePassword();
 				}
 				lastPass = *itP;
+				j++;
 				itP++;
 				break;
 			}
 			case 'l': {
 				if (sign == '+')
 				{
+					if (j >= paramVec.size()) {
+						std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " l :Not enough parameters\r\n";
+						searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+						return "";
+					}
 					std::string param = *itP;
 					bool isEmptyNumber = !param.empty();
 					if (!isEmptyNumber) {
@@ -859,6 +881,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						if (!std::isdigit(*it)) {
 							isValidNumber = false;
 							itP++;
+							j++;
 							break;
 						}
 					}
@@ -870,6 +893,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 					if (stringToInt(*itP) <= 0 || stringToInt(*itP) >= INT_MAX)
 					{
 						itP++;
+						j++;
 						break;
 					}
 					if (channel->getModes()._l && channel->getModes()._limitValue != stringToInt(*itP))
@@ -881,10 +905,16 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 						channel->removeUserLimit();
 				}
 				lastValue = *itP;
+				j++;
 				itP++;
 				break;
 			}
 			case 'o': {
+				if (j >= paramVec.size()) {
+					std::string invalidParamMessage = ":" + std::string(SERV_NAME) + " 461 " + searchfd(pollVecFd)->getNick() + " o :Not enough parameters\r\n";
+					searchfd(pollVecFd)->sendMessage(invalidParamMessage);
+					return "";
+				}
 				std::string param = *itP;
 				bool isEmptyNumber = !param.empty();
 				if (!isEmptyNumber) {
@@ -910,6 +940,7 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				else
 					channel->removeOperator(target);
 				newOperatorList += target->getNick() + " ";
+				j++;
 				itP++;
 				break;
 			}
@@ -1012,7 +1043,7 @@ bool	Server::nameSyntaxChecker(char const *nick) const {
 		return (false);
 	while (*nick) {
 		if (*nick < '0' || (*nick > '9' && *nick < 'A')
-				|| (*nick > ']' && *nick < 'a') || *nick > '}') {
+				|| (*nick > ']' && *nick < '_') || (*nick > '_' && *nick < 'a') || *nick > '}') {
 			return (false);
 		}
 		nick++;
@@ -1543,6 +1574,29 @@ int	Server::cmdWho(std::string buffer, int pollVecFd, int index)
 	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "315"
 			+ " " + searchfd(pollVecFd)->getNick()
 			+ " " + str + " :End of /WHO list." + "\r\n");
+
+	str.clear();
+	return 0;
+}
+
+int	Server::cmdWhois(std::string buffer, int pollVecFd, int index)
+{
+	std::string	str;
+
+	int	i = 0;
+	while (buffer.c_str()[i] == ' ')
+		i++;
+
+	str = buffer.substr(i);
+
+	if (str.c_str()[0] == ':')
+		str = str.substr(1);
+	else
+		str = getFirstWord(str);
+
+	searchfd(pollVecFd)->sendMessage(":" + std::string(SERV_NAME) + " " + "318"
+			+ " " + searchfd(pollVecFd)->getNick()
+			+ " " + str + " :End of /WHOIS list." + "\r\n");
 
 	str.clear();
 	return 0;

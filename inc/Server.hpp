@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 15:21:25 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 18:56:59 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 16:09:28 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ class Server {
 		int				cmdPart(std::string buffer, int pollVecFd, int index);
 		int				cmdPing(std::string buffer, int pollVecFd, int index);
 		int				cmdWho(std::string buffer, int pollVecFd, int index);
+		int				cmdWhois(std::string buffer, int pollVecFd, int index);
 
 		int				needMoreParams(std::string buffer, ClientSocket* client, std::string cmd);
 		void			deleteEOT();
