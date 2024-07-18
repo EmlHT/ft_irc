@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 11:08:32 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 11:45:57 by mcordes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -583,15 +583,35 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 				if (searchfd(pollVecFd) == (*itl))
 				{
 					clientIsOnChannel = true;
-					channel->setTopic(topic, searchfd(pollVecFd)->getNick());
-					if (channel->getTopic() != "")
+					if (topic != "")
+						channel->setTopic(topic, searchfd(pollVecFd)->getNick());
+					if (!channel->getTopic().empty() && topic == "")
+					{
+						std::stringstream ss;
+						ss << channel->getTopicSetAt();
+						std::string topicSetAtStr = ss.str();
+
+						std::string topicMessage = ":" + std::string(SERV_NAME) + " 332 "
+							+ searchfd(pollVecFd)->getNick() + " " + channelName + " "
+							+ channel->getTopic() + "\r\n";
+						searchfd(pollVecFd)->sendMessage(topicMessage);
+
+						std::string topicWhoTimeMessage = ":" + std::string(SERV_NAME)
+							+ " 333 " + searchfd(pollVecFd)->getNick() + " " + channelName
+							+ " " + channel->getTopicSetBy() + "!"
+							+ searchfd(pollVecFd)->getUserName() + "@"
+							+ searchfd(pollVecFd)->getClientIP() + " "
+							+ topicSetAtStr + "\r\n";
+						searchfd(pollVecFd)->sendMessage(topicWhoTimeMessage);
+					}
+					else if (channel->getTopic() != "" && topic != "")
 					{
 						std::string topicMessage = ":"
 							+ searchfd(pollVecFd)->getNick()
 							+ "!" + searchfd(pollVecFd)->getUserName() + "@"
 							+ searchfd(pollVecFd)->getClientIP() + " TOPIC "
 							+ channelName + " :" + topic + "\r\n";
-						searchfd(pollVecFd)->sendMessage(topicMessage);	
+						channel->broadcastMessage(topicMessage);
 					}
 					else
 					{
