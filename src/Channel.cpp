@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 15:14:04 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/17 15:25:39 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 14:23:27 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,10 +152,10 @@ int		Channel::deleteUser(ClientSocket* client)
 
 void		Channel::removeOperator(ClientSocket* client)
 {
-	std::vector<std::string>::iterator it = this->modes._listOperator.begin();
+	std::vector<ClientSocket*>::iterator it = this->modes._listOperator.begin();
 	while (it != this->modes._listOperator.end())
 	{
-		if (client->getNick() == (*it))
+		if (client == (*it))
 		{
 			this->modes._listOperator.erase(it);
 			break;
@@ -168,7 +168,7 @@ void		Channel::removeOperator(ClientSocket* client)
 void		Channel::setOperator(ClientSocket* client)
 {
 	if (!isOperator(client))
-		this->modes._listOperator.push_back(client->getNick());
+		this->modes._listOperator.push_back(client);
 }
 
 void		Channel::broadcastPrivmessage(std::string &message, std::string nick)
@@ -236,10 +236,10 @@ void	Channel::setModes(char mode, bool value)
 
 bool		Channel::isOperator(ClientSocket* client)
 {
-	std::vector<std::string>::iterator it = this->modes._listOperator.begin();
+	std::vector<ClientSocket*>::iterator it = this->modes._listOperator.begin();
 	while (it != this->modes._listOperator.end())
 	{
-		if (client->getNick() == (*it))
+		if (client == (*it))
 			return true;
 		else
 			++it;

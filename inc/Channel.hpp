@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
+/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/17 12:20:20 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/16 23:37:29 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 14:21:12 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ class Channel {
 			bool _k;
 			bool _l;
 			int _limitValue;
-			std::vector<std::string> _listOperator;
+			std::vector<ClientSocket*> _listOperator;
+			// std::vector<std::string> _listOperator;
 		};
 
 		_modes modes;
