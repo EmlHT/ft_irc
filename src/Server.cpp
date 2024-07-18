@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/17 17:51:28 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/18 11:08:32 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -583,24 +583,23 @@ int	Server::cmdTopic(std::string buffer, int pollVecFd, int index) {
 				if (searchfd(pollVecFd) == (*itl))
 				{
 					clientIsOnChannel = true;
-					if (channel->isOperator(searchfd(pollVecFd)))
+					channel->setTopic(topic, searchfd(pollVecFd)->getNick());
+					if (channel->getTopic() != "")
 					{
-						channel->setTopic(topic, searchfd(pollVecFd)->getNick());
 						std::string topicMessage = ":"
 							+ searchfd(pollVecFd)->getNick()
 							+ "!" + searchfd(pollVecFd)->getUserName() + "@"
 							+ searchfd(pollVecFd)->getClientIP() + " TOPIC "
 							+ channelName + " :" + topic + "\r\n";
-						channel->broadcastMessage(topicMessage);
+						searchfd(pollVecFd)->sendMessage(topicMessage);	
 					}
 					else
 					{
-						std::string notOperatorMessage = ":"
-							+ std::string(SERV_NAME) + " 482 "
+						std::string noTopicMessage = ":"
+							+ std::string(SERV_NAME) + " 331 " 
 							+ searchfd(pollVecFd)->getNick() + " "
-							+ channelName + " :You're not channel operator"
-							+ "\r\n";
-						searchfd(pollVecFd)->sendMessage(notOperatorMessage);
+							+ channel->getName() + " :No topic is set.\r\n";
+						searchfd(pollVecFd)->sendMessage(noTopicMessage);
 					}
 					break;
 				}
