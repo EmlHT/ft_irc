@@ -132,9 +132,11 @@ void	Server::clientTreats(int i)
 	else
 	{
 		bufferContent[bytes_received] = '\0';
-		if (isTerminatedByN(bufferContent) == 0)
+		if (std::string(bufferContent).compare("\n") != 0 && isTerminatedByN(bufferContent) == 0)
 			this->_concatBuffer += std::string(bufferContent);
-		else if (!(std::string(bufferContent).compare("\n") == 0
+		else if ((!_concatBuffer.empty() && (std::string(bufferContent).compare("\n") == 0
+				|| std::string(bufferContent).compare("\r\n") == 0))
+				|| !(std::string(bufferContent).compare("\n") == 0
 				|| std::string(bufferContent).compare("\r\n") == 0))
 		{
 			this->_concatBuffer += std::string(bufferContent);
