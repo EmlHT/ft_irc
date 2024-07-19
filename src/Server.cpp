@@ -6,7 +6,7 @@
 /*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/19 13:49:08 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/19 15:29:16 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -445,6 +445,11 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 			+ " :No such channel" + "\r\n";
 		searchfd(pollVecFd)->sendMessage(noChannelMessage);
 		return (0);
+	}
+	if (!channel->isMember(searchfd(pollVecFd))) {
+			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName +  " :You're not on that channel" + "\r\n";
+			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
+			return (0);
 	}
 	if (!channel->isOperator(searchfd(pollVecFd)))
 	{
