@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
+/*   By: ehouot < ehouot@student.42nice.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/18 17:30:14 by mcordes          ###   ########.fr       */
+/*   Updated: 2024/07/19 13:49:08 by ehouot           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -939,10 +939,10 @@ std::string Server::applyChannelModes(Channel* channel, const std::string& modeP
 				return "";
 		}
 	}
-	if (lastValue != "")
-		activeModes += " " + lastValue;
 	if (lastPass != "")
 		activeModes += " " + lastPass;
+	if (lastValue != "")
+		activeModes += " " + lastValue;
 	if (newOperatorList != "")
 		activeModes += " " + newOperatorList;
 	return activeModes;
