@@ -413,7 +413,9 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 		return (0);
 	}
 	if (!channel->isMember(searchfd(pollVecFd))) {
-			std::string notOnChannelMessage = ":" + std::string(SERV_NAME) + " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName +  " :You're not on that channel" + "\r\n";
+			std::string notOnChannelMessage = ":" + std::string(SERV_NAME)
+				+ " 442 " + searchfd(pollVecFd)->getNick() + " " + channelName
+				+ " :You're not on that channel" + "\r\n";
 			searchfd(pollVecFd)->sendMessage(notOnChannelMessage);
 			return (0);
 	}
