@@ -1,3 +1,0 @@
-Pour les channels :
- - Faire en sorte qu'ils recoivent les send des commandes et qu'ils redistribuent aux clients connectés. (PRIVMSG, )
- - La class Channel doit avoir un attribut de type std::string _name avec un getName() FAIT !
