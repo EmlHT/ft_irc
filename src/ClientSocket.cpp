@@ -60,7 +60,7 @@ const std::string	ClientSocket::getPass() const
 	return this->_password;
 }
 
-bool		ClientSocket::getIsConnect() const
+bool	ClientSocket::getIsConnect() const
 {
 	return this->_isConnect;
 }

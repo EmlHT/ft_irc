@@ -49,9 +49,9 @@ bool	ListenSocket::ListenAndBind(int port)
 int		ListenSocket::AcceptConnection()
 {
 	int client_sockfd = accept(getSocketFd(), NULL, NULL);
-    if (client_sockfd < 0)
+	if (client_sockfd < 0)
 	{
-        std::cerr << errno << std::endl;
-    }
-    return client_sockfd;
+		std::cerr << errno << std::endl;
+	}
+	return client_sockfd;
 }

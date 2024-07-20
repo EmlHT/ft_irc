@@ -11,9 +11,9 @@
 /* ************************************************************************** */
 
 #include "Channel.hpp"
-#include <stdio.h>
 
-Channel::Channel(std::string name, std::string password) : _name(name), _channelPass(password), _isPass(!password.empty())
+Channel::Channel(std::string name, std::string password) : _name(name),
+	_channelPass(password), _isPass(!password.empty())
 {
 	modes._i = false;
 	modes._t = true;
@@ -56,56 +56,58 @@ std::vector<ClientSocket*> Channel::getListClients() const
 	return this->_listClients;
 }
 
-std::string					Channel::getTopic() const
+std::string	Channel::getTopic() const
 {
 	return this->_topic;
 }
 
-std::string					Channel::getTopicSetBy() const
+std::string	Channel::getTopicSetBy() const
 {
 	return this->_topicSetBy;
 }
 
-time_t					Channel::getTopicSetAt() const
+time_t	Channel::getTopicSetAt() const
 {
 	return this->_topicSetAt;
 }
 
-void		Channel::setTopicSetBy(std::string &client)
+void	Channel::setTopicSetBy(std::string &client)
 {
 	this->_topicSetBy = client;
 }
-void		Channel::setTopicSetAt()
+void	Channel::setTopicSetAt()
 {
 	this->_topicSetAt = time(0);
 }
 
-void		Channel::setTopic(std::string topic, std::string client)
+void	Channel::setTopic(std::string topic, std::string client)
 {
 	this->_topic = topic;
 	setTopicSetBy(client);
 	setTopicSetAt();
 }
 
-void		Channel::setPassword(std::string password)
+void	Channel::setPassword(std::string password)
 {
 	this->_channelPass = password;
 	this->_isPass = !password.empty();
 	this->modes._k = this->_isPass;
 }
 
-void		Channel::setListInvited(std::string nick)
+void	Channel::setListInvited(std::string nick)
 {
 	this->modes._listInvited.push_back(nick);
 }
 
-std::string		Channel::addUser(ClientSocket* client, std::string &password)
+std::string	Channel::addUser(ClientSocket* client, std::string &password)
 {
 	if (this->modes._k)
 	{
 		if (this->_channelPass != password)
 		{
-			std::string passRet = ":" + std::string(SERV_NAME) + " 475 " + client->getNick() + " " + this->_name + " :Cannot join channel (+k)\r\n";
+			std::string passRet = ":" + std::string(SERV_NAME) + " 475 "
+				+ client->getNick() + " " + this->_name
+				+ " :Cannot join channel (+k)\r\n";
 			return passRet;
 		}
 	}
@@ -113,7 +115,9 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	{
 		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
 		{
-			std::string listRet = ":" + std::string(SERV_NAME) + " 471 " + client->getNick() + " " + this->_name + " :Cannot join channel (+l)\r\n";
+			std::string listRet = ":" + std::string(SERV_NAME) + " 471 "
+				+ client->getNick() + " " + this->_name
+				+ " :Cannot join channel (+l)\r\n";
 			return listRet;
 		}
 	}
@@ -121,7 +125,9 @@ std::string		Channel::addUser(ClientSocket* client, std::string &password)
 	{
 		if (std::find(modes._listInvited.begin(), modes._listInvited.end(), client->getNick()) == modes._listInvited.end())
 		{
-			std::string invRet = ":" + std::string(SERV_NAME) + " 473 " + client->getNick() + " " + this->_name + " :Cannot join channel (+i)\r\n"; 
+			std::string invRet = ":" + std::string(SERV_NAME) + " 473 "
+				+ client->getNick() + " " + this->_name
+				+ " :Cannot join channel (+i)\r\n";
 			return invRet;
 		}
 	}
@@ -150,7 +156,7 @@ int		Channel::deleteUser(ClientSocket* client)
 	return (0);
 }
 
-void		Channel::removeOperator(ClientSocket* client)
+void	Channel::removeOperator(ClientSocket* client)
 {
 	std::vector<ClientSocket*>::iterator it = this->modes._listOperator.begin();
 	while (it != this->modes._listOperator.end())
@@ -165,13 +171,13 @@ void		Channel::removeOperator(ClientSocket* client)
 	}
 }
 
-void		Channel::setOperator(ClientSocket* client)
+void	Channel::setOperator(ClientSocket* client)
 {
 	if (!isOperator(client))
 		this->modes._listOperator.push_back(client);
 }
 
-void		Channel::broadcastPrivmessage(std::string &message, std::string nick)
+void	Channel::broadcastPrivmessage(std::string &message, std::string nick)
 {
 	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)
 	{
@@ -180,7 +186,7 @@ void		Channel::broadcastPrivmessage(std::string &message, std::string nick)
 	}
 }
 
-void		Channel::broadcastMessage(std::string &message)
+void	Channel::broadcastMessage(std::string &message)
 {
 	for(int i = 0; i < static_cast<int>(this->_listClients.size()); i++)
 	{
@@ -234,7 +240,7 @@ void	Channel::setModes(char mode, bool value)
 	}
 }
 
-bool		Channel::isOperator(ClientSocket* client)
+bool	Channel::isOperator(ClientSocket* client)
 {
 	std::vector<ClientSocket*>::iterator it = this->modes._listOperator.begin();
 	while (it != this->modes._listOperator.end())
@@ -247,7 +253,7 @@ bool		Channel::isOperator(ClientSocket* client)
 	return false;
 }
 
-bool		Channel::isMember(ClientSocket* client)
+bool	Channel::isMember(ClientSocket* client)
 {
 	std::vector<ClientSocket*>::iterator it = this->_listClients.begin();
 	while (it != this->_listClients.end())

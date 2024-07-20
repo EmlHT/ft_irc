@@ -22,7 +22,7 @@ class ListenSocket : public ASocket {
 		ListenSocket & operator=(const ListenSocket &rhs);
 
 	public :
-		
+
 		ListenSocket();
 		virtual ~ListenSocket();
 		bool	ListenAndBind(int port);

@@ -40,7 +40,6 @@ class Channel {
 			bool _l;
 			int _limitValue;
 			std::vector<ClientSocket*> _listOperator;
-			// std::vector<std::string> _listOperator;
 		};
 
 		_modes modes;
@@ -62,7 +61,6 @@ class Channel {
 		std::vector<ClientSocket*> 	getListClients() const;
 		_modes						getModes() const;
 		std::string					getCreateTime() const;
-
 
 		void						setInviteOnly(bool activation);
 		void						setUserLimit(int limit);

@@ -48,13 +48,13 @@ class Server {
 		static int					_buffer_recv_limit;
 		std::vector<struct pollfd>	_pollVec;
 		std::string					_concatBuffer;
-		
+
 		Server();
 		Server(const Server &src);
 		Server & operator=(const Server &rhs);
 
 		void			clientTreats(int i);
-		bool			acceptNewClient(int i);
+		bool			acceptNewClient();
 		void			addInStructPollfd(int fd, short event);
 		ClientSocket	*searchfd(int fd) const;
 		void			firstConnection(char *buffer, int pollVecFd, int index);
@@ -82,7 +82,6 @@ class Server {
 		bool			realNameSyntaxChecker(char const *nick) const;
 		bool			nickExist(std::string nick) const;
 		std::string		applyChannelModes(Channel* channel, const std::string& modeParams, int pollVecFd);
-		// void			deleteChannel(std::string channelName);
 
 		int				findClientSocketFd(std::vector<ClientSocket*>& vec, std::string& targetNick);
 		Channel*		findChannelName(std::vector<Channel*>& vec, const std::string& targetName);
