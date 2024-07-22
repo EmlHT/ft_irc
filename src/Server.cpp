@@ -6,7 +6,7 @@
 /*   By: ehouot <ehouot@student.42nice.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 11:33:19 by ehouot            #+#    #+#             */
-/*   Updated: 2024/07/22 15:28:01 by ehouot           ###   ########.fr       */
+/*   Updated: 2024/07/22 15:47:45 by mcordes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -468,15 +468,15 @@ int	Server::cmdKick(std::string buffer, int pollVecFd, int index) {
 				+ searchfd(pollVecFd)->getClientIP() + " KICK " + channelName
 				+ " " + users[i] + " :" + reason + "\r\n";
 		channel->broadcastMessage(kickMessage);
-		std::vector<Channel*>::iterator itC;
 		if (channel->deleteUser(userToKick) == -1)
 		{
-			for (itC = _channelSocket.begin(); itC != _channelSocket.end(); itC++)
-			{
-				if ((*itC)->getName() == channelName)
+			for (std::vector<Channel*>::iterator itC = _channelSocket.begin(); itC != _channelSocket.end(); itC++) {
+				if ((*itC)->getName() == channelName) {
+					delete channel;
 					_channelSocket.erase(itC);
+					break ;
+				}
 			}
-			delete channel;
 		}
 	}
 	return (0);
