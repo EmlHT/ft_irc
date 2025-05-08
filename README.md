@@ -27,12 +27,14 @@
 
 ### Installation
 
-git clone https://github.com/your_username/ft_irc.git 
+git clone https://github.com/your_username/ft_irc.git
+
 cd ft_irc 
+
 make
 
 Usage:
-./ircserv <port> <password>
+./ircserv '<'port'>' '<'password'>'
 
 Example:
 ./ircserv 6667 mySuperSecret
