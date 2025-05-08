@@ -27,11 +27,11 @@
 
 ### Installation
 
-git clone https://github.com/your_username/ft_irc.git
-cd ft_irc
+git clone https://github.com/your_username/ft_irc.git 
+cd ft_irc 
 make
 
-Usage
+Usage:
 ./ircserv <port> <password>
 
 Example:
@@ -47,19 +47,6 @@ Mastering socket programming in C++
 Efficiently managing multiple clients
 Designing a reliable event-driven system
 Parsing and handling a command protocol
-
-## 📁 Project Structure
-
-ft_irc/
-├── srcs/
-│   ├── main.cpp
-│   ├── Server.cpp / Server.hpp
-│   ├── Client.cpp / Client.hpp
-│   ├── Channel.cpp / Channel.hpp
-│   ├── CommandHandler.cpp / CommandHandler.hpp
-├── includes/
-├── Makefile
-└── README.md
 
 🧪 Testing
 You can test the server using multiple terminal clients or dedicated IRC clients like:
