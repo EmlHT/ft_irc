@@ -50,14 +50,14 @@ Efficiently managing multiple clients
 Designing a reliable event-driven system
 Parsing and handling a command protocol
 
-🧪 Testing
+## 🧪 Testing
 You can test the server using multiple terminal clients or dedicated IRC clients like:
 
 irssi
 WeeChat
 telnet or nc for simple raw connections
 
-👨‍💻 Authors
+## 👨‍💻 Authors
 Emilien Houot
 Mattieu Cordes
 
