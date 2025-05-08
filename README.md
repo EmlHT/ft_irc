@@ -58,7 +58,7 @@ WeeChat
 telnet or nc for simple raw connections
 
 ## 👨‍💻 Authors
-Emilien Houot
+Emilien Houot &
 Mattieu Cordes
 
 📝 License
